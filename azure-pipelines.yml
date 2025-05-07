@@ -21,28 +21,6 @@ stages:
       displayName: 'Install Terraform'
       inputs:
         terraformVersion: 'latest'
-    - task: TerraformTaskV5@5
-      displayName: Terraform Init
-      inputs:
-        provider: 'aws'
-        command: 'init'
-    - task: TerraformTaskV5@5
-      name: terraformPlan
-      displayName: Terraform Plan
-      inputs:
-        provider: 'aws'
-        command: 'plan'
-        commandOptions: '-out=tfplan'
-        environmentServiceNameAWS: 'aws-dev'
-    - task: TerraformTaskV5@5
-      displayName: Terraform Apply
-      condition: and(succeeded(), eq(variables['terraformPlan.changesPresent'], 'true'))
-      inputs:
-        provider: 'aws'
-        command: 'apply'
-        commandOptions: 'tfplan'
-        environmentServiceNameAWS: 'aws-dev'
-
   
 
 
