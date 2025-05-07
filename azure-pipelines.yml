@@ -36,7 +36,7 @@ stages:
         - script: terraform init
           displayName: 'Terraform Init'
           name: TerraformInit
-          condition: succeeded('InstallTerraform')
+          condition: succeeded('Install Terraform')
 
         - script: terraform plan -out=tfplan
           displayName: 'Terraform Plan'
