@@ -17,10 +17,10 @@ stages:
     steps:
     - checkout: self
 
-    - task: TerraformInstaller@1
+    - script: echo "heloo"
       displayName: 'Install Terraform'
-      inputs:
-        terraformVersion: 'latest'
+      
+
   
 
 
