@@ -1,12 +1,11 @@
-# Feedback application
-
 trigger:
-    branches:
-      include:
-        - main
+  branches:
+    include:
+      - main
 
 pool:
-    name: Default
+  name: Default
+
 stages:
 
 - stage: CI
@@ -36,7 +35,7 @@ stages:
         - script: terraform init
           displayName: 'Terraform Init'
           name: TerraformInit
-          condition: succeeded('Install Terraform')
+          condition: succeeded('InstallTerraform')
 
         - script: terraform plan -out=tfplan
           displayName: 'Terraform Plan'
@@ -47,8 +46,3 @@ stages:
           displayName: 'Terraform Apply'
           name: TerraformApply
           condition: succeeded('TerraformPlan')
-      
-
-  
-
-
