@@ -6,7 +6,7 @@ trigger:
         - main
 
 pool:
-    name: vmware
+ vmImage: 'ubuntu-latest'  
 stages:
 
 - stage: CI
