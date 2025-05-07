@@ -19,6 +19,35 @@ stages:
 
     - script: echo "heloo"
       displayName: 'Install Terraform'
+
+stages:
+- stage: TerraformCLI
+  jobs:
+    - job: Terraform
+      steps:
+        - checkout: self
+
+        - script: |
+            curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+            echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+            sudo apt update && sudo apt install -y terraform
+          displayName: 'Install Terraform'
+          name: InstallTerraform
+
+        - script: terraform init
+          displayName: 'Terraform Init'
+          name: TerraformInit
+          condition: succeeded('InstallTerraform')
+
+        - script: terraform plan -out=tfplan
+          displayName: 'Terraform Plan'
+          name: TerraformPlan
+          condition: succeeded('TerraformInit')
+
+        - script: terraform apply -auto-approve tfplan
+          displayName: 'Terraform Apply'
+          name: TerraformApply
+          condition: succeeded('TerraformPlan')
       
 
   
