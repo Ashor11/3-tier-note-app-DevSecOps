@@ -33,7 +33,7 @@ stages:
         provider: 'aws'
         command: 'plan'
         commandOptions: '-out=tfplan'
-        environmentServiceNameAWS: 'aws-dev'  # Replace with your actual service connection name
+        environmentServiceNameAWS: 'aws-dev'
     - task: TerraformTaskV5@5
       displayName: Terraform Apply
       condition: and(succeeded(), eq(variables['terraformPlan.changesPresent'], 'true'))
@@ -41,7 +41,7 @@ stages:
         provider: 'aws'
         command: 'apply'
         commandOptions: 'tfplan'
-        environmentServiceNameAWS: 'aws-dev'  # Same here
+        environmentServiceNameAWS: 'aws-dev'
 
   
 
