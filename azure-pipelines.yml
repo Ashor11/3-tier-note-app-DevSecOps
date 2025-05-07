@@ -1,48 +1,45 @@
-# Feedback application
-
 trigger:
-    branches:
-      include:
-        - main
+  branches:
+    include:
+      - main
 
 pool:
- vmImage: 'ubuntu-latest'  
-stages:
+  vmImage: 'ubuntu-latest'  # or your custom pool name
 
+stages:
 - stage: CI
   displayName: CI stage
   jobs:
-  - job: Lint
-    displayName: Linting Backend
-    steps:
-    - checkout: self
+    - job: Lint
+      displayName: Linting Backend
+      steps:
+        - checkout: self
 
-    - task: TerraformInstaller@1
-      displayName: 'Install Terraform'
-      inputs:
-        terraformVersion: 'latest'
-    - task: TerraformTaskV5@5
-      displayName: Terraform Init
-      inputs:
-        provider: 'aws'
-        command: 'init'
-    - task: TerraformTaskV5@5
-      name: terraformPlan
-      displayName: Terraform Plan
-      inputs:
-        provider: 'aws'
-        command: 'plan'
-        commandOptions: '-out=tfplan'
-        environmentServiceNameAWS: 'aws-dev'
-    - task: TerraformTaskV5@5
-      displayName: Terraform Apply
-      condition: and(succeeded(), eq(variables['terraformPlan.changesPresent'], 'true'))
-      inputs:
-        provider: 'aws'
-        command: 'apply'
-        commandOptions: 'tfplan'
-        environmentServiceNameAWS: 'aws-dev'
+        - task: TerraformInstaller@1
+          displayName: 'Install Terraform'
+          inputs:
+            terraformVersion: 'latest'
 
-  
+        - task: TerraformTaskV5@5
+          displayName: 'Terraform Init'
+          inputs:
+            provider: 'aws'
+            command: 'init'
 
+        - task: TerraformTaskV5@5
+          name: terraformPlan
+          displayName: 'Terraform Plan'
+          inputs:
+            provider: 'aws'
+            command: 'plan'
+            commandOptions: '-out=tfplan'
+            environmentServiceNameAWS: 'aws-dev'  # update with your actual service connection name
 
+        - task: TerraformTaskV5@5
+          displayName: 'Terraform Apply'
+          condition: and(succeeded(), eq(variables['terraformPlan.changesPresent'], 'true'))
+          inputs:
+            provider: 'aws'
+            command: 'apply'
+            commandOptions: 'tfplan'
+            environmentServiceNameAWS: 'aws-dev'
