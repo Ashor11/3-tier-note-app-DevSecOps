@@ -23,16 +23,14 @@ stages:
   jobs:
     - job: Terraform
       variables:
-        aws_access_key_id: "AWS_ACCESS_KEY_ID:"
-        aws_secret_access_key: "AWS_ACCESS_KEY_ID:"
-        aws_session_token: "AWS_ACCESS_KEY_ID:"
+        - group: my-secrets
       steps:
         - checkout: self
         - script: |
              sudo yum install -y yum-utils
              sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
              sudo yum -y install terraform
-          displayName: 'Install Terraform and aws cradintiasls'
+          displayName: 'Install Terraform and aws cradintiasl'
           env:
             AWS_ACCESS_KEY_ID: $(aws_access_key_id)
             AWS_SECRET_ACCESS_KEY: $(aws_secret_access_key)
