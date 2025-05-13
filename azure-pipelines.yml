@@ -77,12 +77,12 @@ stages:
           displayName: 'Terraform Apply'
           condition: succeeded()
     - job: k8s
+      condition: succeeded('Terraform')
       steps:
         - checkout: self
         - script: |
             aws eks update-kubeconfig --region us-east-1 --name my-eks-cluster
           displayName: 'Update kubeconfig'
-          condition: succeeded()
           
         - script: |
             kubectl get nodes -A
