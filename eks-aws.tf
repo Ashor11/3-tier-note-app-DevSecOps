@@ -4,7 +4,6 @@ data "aws_iam_role" "LabRole" {
 }
 
 
-
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.1.0"
@@ -27,19 +26,18 @@ module "vpc" {
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.8.3"
-
   cluster_name    = var.cluster_name
   cluster_version = "1.29"
   subnet_ids      = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
-
+  iam_role_arn = data.aws_iam_role.LabRole.arn
 
   eks_managed_node_groups = {
     default = {
       min_size     = 1
       max_size     = 3
       desired_size = 2
-    role_arn = "arn:aws:iam::975049987520:role/LabRole"
+    node_role_arn = data.aws_iam_role.LabRole.arn
       force_update = true
       instance_types = ["t3.micro"]
     }
