@@ -39,7 +39,7 @@ resource "aws_security_group" "eks" {  //create security group for this instance
     }
  
 resource "aws_instance" "eks" {  //create instance in this subnet
-  ami           = "ami-0c55b159cbfafe1f0" //ubuntu 20.04
+  ami           =  "ami-0f88e80871fd81e91" //amazon linux 2 ami
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.eks.id
   vpc_security_group_ids = [aws_security_group.eks.id]
