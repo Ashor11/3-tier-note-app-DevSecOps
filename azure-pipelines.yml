@@ -59,9 +59,10 @@ stages:
              echo "AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN"
           displayName: 'Check AWS Credentials'
           condition: succeeded()
-          
+
         - script: |
              echo "Checking AWS CLI version..."
+             CREDENTIALS=$(aws sts assume-role --role-arn "arn:aws:iam::<account-id>:role/another-role" --role-session-name "pipeline-session")
              aws sts get-caller-identity
           displayName: 'Check AWS CLI Version'
           condition: succeeded()
