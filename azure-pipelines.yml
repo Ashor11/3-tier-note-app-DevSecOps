@@ -87,4 +87,3 @@ stages:
         - script: |
             kubectl get nodes -A
           displayName: 'Check nodes'
-   
