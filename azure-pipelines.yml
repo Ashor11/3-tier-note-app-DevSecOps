@@ -2,22 +2,31 @@ trigger:
   branches:
     include:
       - main
-
 pool:
   name: Default
-
 stages:
 
 - stage: CI
   displayName: CI stage
   jobs:
-  - job: Lint
-    displayName: Linting Backend
+  - job: backend
     steps:
     - checkout: self
 
     - script: echo "heloo"
-      displayName: 'Install Terraform'
+      displayName: Linting Backend
+
+    - script: echo "heloo"
+      displayName: 'Test backend'
+
+  - job: frontend
+    displayName: Linting frontend
+
+    steps:
+    - checkout: self
+
+    - script: echo "heloo"
+      displayName: 'Test frontend'
 
 - stage: terraform_aws
   jobs:
@@ -30,7 +39,15 @@ stages:
              sudo yum install -y yum-utils
              sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
              sudo yum -y install terraform
-          displayName: 'Install Terraform and aws cradintiasl'
+          displayName: 'Install Terraform'
+
+        - script: |
+             echo "Installing AWS CLI..."
+             curl "https://d1wni0z0v2x3q4.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+             unzip awscliv2.zip
+             sudo ./aws/install
+             aws sts get-caller-identity
+          displayName: 'Install AWS CLI'
           env:
             AWS_ACCESS_KEY_ID: $(aws_access_key_id)
             AWS_SECRET_ACCESS_KEY: $(aws_secret_access_key)
@@ -60,4 +77,14 @@ stages:
         - script: terraform apply -auto-approve tfplan
           displayName: 'Terraform Apply'
           condition: succeeded()
+    - job: k8s
+      steps:
+        - checkout: self
+        - script: |
+            aws eks update-kubeconfig --region us-east-1 --name my-eks-cluster
+          displayName: 'Update kubeconfig'
+          
+        - script: |
+            kubectl get nodes -A
+          displayName: 'Check nodes'
    
