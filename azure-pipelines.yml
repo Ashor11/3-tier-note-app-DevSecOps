@@ -26,25 +26,12 @@ stages:
         - group: my-secrets
       steps:
         - checkout: self
-        - script: |
-             sudo yum install -y yum-utils
-             sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-             sudo yum -y install terraform
-             
-          displayName: 'Install Terraform'
-        - script: |
-           echo "Installing AWS CLI..."
-           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-           unzip awscliv2.zip
-           sudo ./aws/install
-           aws sts get-caller-identity
           env:
             AWS_ACCESS_KEY_ID: $(aws_access_key_id)
             AWS_SECRET_ACCESS_KEY: $(aws_secret_access_key)
             AWS_SESSION_TOKEN: $(aws_session_token)
           displayName: 'Install AWS CLI'
           condition: succeeded()
-
         - script: |
              echo "Checking AWS credentials..."
              echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
