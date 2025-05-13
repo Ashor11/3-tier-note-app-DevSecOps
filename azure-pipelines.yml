@@ -42,13 +42,21 @@ stages:
             AWS_ACCESS_KEY_ID: $(aws_access_key_id)
             AWS_SECRET_ACCESS_KEY: $(aws_secret_access_key)
             AWS_SESSION_TOKEN: $(aws_session_token)
-            AWS_DEFAULT_REGION: us-east-1
           displayName: 'Install AWS CLI'
+          condition: succeeded()
+
+        - script: |
+             echo "Checking AWS credentials..."
+             echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
+             echo "AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
+             echo "AWS_SESSION_TOKEN: $AWS_SESSION_TOKEN"
+          displayName: 'Check AWS Credentials'
           condition: succeeded()
 
         - script: terraform fmt
           displayName: 'Terraform Format'
           condition: succeeded()
+
         - script: terraform init
           displayName: 'Terraform Init'
           condition: succeeded()
