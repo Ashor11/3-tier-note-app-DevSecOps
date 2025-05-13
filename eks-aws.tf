@@ -1,4 +1,3 @@
-
 data "aws_iam_role" "LabRole" {
   name = "LabRole"
 }
@@ -15,7 +14,7 @@ module "vpc" {
   azs             = ["${var.region}a", "${var.region}b"]
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
-
+  
   enable_nat_gateway   = true
   single_nat_gateway   = true
   enable_dns_hostnames = true
@@ -39,7 +38,8 @@ module "eks" {
       min_size     = 1
       max_size     = 3
       desired_size = 2
-
+    iam_role_arn = data.aws_iam_role.LabRole.arn
+      force_update = true
       instance_types = ["t3.micro"]
     }
   }
@@ -49,4 +49,5 @@ module "eks" {
     Terraform   = "true"
   }
 }
+
 
