@@ -19,7 +19,7 @@ stages:
     - script: echo "heloo"
       displayName: 'Install Terraform'
 
-- stage: terraform-aws
+- stage: terraform_aws
   jobs:
     - job: Terraform
       variables:
