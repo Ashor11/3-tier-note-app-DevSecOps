@@ -1,3 +1,4 @@
+
 data "aws_iam_role" "LabRole" {
   name = "LabRole"
 }
@@ -31,14 +32,14 @@ module "eks" {
   cluster_version = "1.29"
   subnet_ids      = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
-  iam_role_arn  = data.aws_iam_role.LabRole.arn
+
 
   eks_managed_node_groups = {
     default = {
       min_size     = 1
       max_size     = 3
       desired_size = 2
-    iam_role_arn = data.aws_iam_role.LabRole.arn
+    role_arn = "arn:aws:iam::975049987520:role/LabRole"
       force_update = true
       instance_types = ["t3.micro"]
     }

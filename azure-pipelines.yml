@@ -62,7 +62,6 @@ stages:
 
         - script: |
              echo "Checking AWS CLI version..."
-             CREDENTIALS=$(aws sts assume-role --role-arn "arn:aws:iam::975049987520:role/LabRole" --role-session-name "pipeline-session")
              aws sts get-caller-identity
           displayName: 'Check AWS CLI Version'
           condition: succeeded()
