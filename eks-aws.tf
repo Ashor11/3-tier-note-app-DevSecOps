@@ -1,3 +1,10 @@
+
+data "aws_iam_role" "LabRole" {
+  name = "LabRole"
+}
+
+
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.1.0"
@@ -25,6 +32,7 @@ module "eks" {
   cluster_version = "1.29"
   subnet_ids      = module.vpc.private_subnets
   vpc_id          = module.vpc.vpc_id
+  iam_role_arn  = data.aws_iam_role.LabRole.arn
 
   eks_managed_node_groups = {
     default = {
