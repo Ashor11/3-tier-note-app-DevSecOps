@@ -19,19 +19,57 @@ stages:
     - script: echo "heloo"
       displayName: 'Install Terraform'
 
-- stage: TerraformCLI
+- stage: TerraformCLI and AWSCLI
   jobs:
-    - job: Terraform
+    - job: AWSCLI
+      steps:
+        
+        - checkout: self
+        - script: |
+           echo "Exporting temporary AWS credentials..."
+           export AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID)
+           export AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY)
+           export AWS_SESSION_TOKEN=$(AWS_SESSION_TOKEN)
+           export AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION)
+           echo "Installing AWS CLI..."
+           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+           unzip awscliv2.zip
+           sudo ./aws/install
+           aws sts get-caller-identity
+          env:
+            AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+            AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+            AWS_SESSION_TOKEN: $(AWS_SESSION_TOKEN)
+            AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+
+    - job: Terraform-aws-credentials
+      variables:
+        - group: my-secrets
       steps:
         - checkout: self
-
         - script: |
              sudo yum install -y yum-utils
              sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
              sudo yum -y install terraform
              
           displayName: 'Install Terraform'
+        - script: |
+           echo "Installing AWS CLI..."
+           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+           unzip awscliv2.zip
+           sudo ./aws/install
+           aws sts get-caller-identity
+          env:
+            AWS_ACCESS_KEY_ID: $(aws_access_key_id)
+            AWS_SECRET_ACCESS_KEY: $(aws_secret_access_key)
+            AWS_SESSION_TOKEN: $(aws_session_token)
+            AWS_DEFAULT_REGION: us-east-1
+          displayName: 'Install AWS CLI'
+          condition: succeeded()
 
+        - script: terraform fmt
+          displayName: 'Terraform Format'
+          condition: succeeded()
         - script: terraform init
           displayName: 'Terraform Init'
           condition: succeeded()
@@ -43,3 +81,4 @@ stages:
         - script: terraform apply -auto-approve tfplan
           displayName: 'Terraform Apply'
           condition: succeeded()
+   
