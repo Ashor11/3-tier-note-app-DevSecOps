@@ -40,7 +40,7 @@ stages:
     - script: flake8 src/feedback_backend/app.py
       displayName: Linting Backend
     - script: |
-        python3 -m pytest src/feedback_backend/tests/test_app.py
+        python3 -m pytest /src/tests/test_app.py
       displayName: 'Run Backend Tests'
       
   - job: docker
