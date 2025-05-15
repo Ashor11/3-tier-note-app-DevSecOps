@@ -40,6 +40,7 @@ stages:
     - script: flake8 src/feedback_backend/app.py
       displayName: Linting Backend
     - script: |
+        sudo pip install -r src/feedback_backend/requirements.txt
         python3 -m pytest tests/test_app.py
       displayName: 'Run Backend Tests'
       
