@@ -45,6 +45,7 @@ stages:
         containerRegistry: 'dockerHubConnection'
         repository: '$(DOCKER_USERNAME)/$(imageName)-frontend'
         command: 'buildAndPush'
+        buildContext: '$(System.DefaultWorkingDirectory)'
         Dockerfile: 'src/feedback_frontend/src/Dockerfile'
         tags: |
           $(Build.BuildId)
@@ -56,6 +57,7 @@ stages:
         repository: '$(DOCKER_USERNAME)/$(imageName)-backend'
         command: 'buildAndPush'
         Dockerfile: 'src/feedback_backend/Dockerfile'
+        buildContext: '$(System.DefaultWorkingDirectory)'
         tags: |
           $(Build.BuildId)
     
