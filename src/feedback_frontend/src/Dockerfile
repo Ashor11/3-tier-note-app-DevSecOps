@@ -3,7 +3,7 @@ FROM node:18 AS build
 WORKDIR /app
 COPY src/feedback_frontend/src/package.json ./
 RUN npm install
-COPY . .
+COPY src/feedback_frontend/ ./
 RUN npm run build
 
 FROM nginx:alpine
