@@ -6,9 +6,12 @@ pool:
   name: Default
 
 variables:
-  dockerhub_username: $(DOCKER_USERNAME)
-  imageName: 'feedback-app'
-  imageTag: '$(Build.BuildId)'
+  - group: docker_vars
+  - name: imageName
+    value: feedback-app
+  - name: imageTag
+    value: $(Build.BuildId)
+  
 parameters:
   - name: environment
     displayName: Environment
@@ -53,7 +56,7 @@ stages:
       displayName: 'Build frontend image'
       inputs:
         containerRegistry: 'dockerHubConnection'
-        repository: '$(dockerhub_image_name)/$(imageName)-frontend'
+        repository: '$(DOCKER_USERNAME)/$(imageName)-frontend'
         command: 'buildAndPush'
         Dockerfile: 'src/feedback_frontend/src/Dockerfile'
         tags: |
