@@ -4,6 +4,19 @@ trigger:
       - main
 pool:
   name: Default
+
+variables:
+  dockerhub_username: $(DOCKER_USERNAME)
+  imageName: 'feedback-app'
+  imageTag: '$(Build.BuildId)'
+parameters:
+  - name: environment
+    displayName: Environment
+    type: string
+    default: dev
+    values:
+      - dev
+      - prod
 stages:
 
 - stage: CI
@@ -12,18 +25,48 @@ stages:
   - job: backend
     steps:
     - checkout: self
-
-    - script: echo "heloo"
+    - displayName: install python
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.9'
+        addToPath: true
+      displayName: 'Install Python 3.9'
+    - script: |
+        python -m pip install --upgrade pip
+        pip install flask pytest flake8
+      displayName: 'Install Flask and linting tools'
+    - script: flake8 src/feedback_backend/app.py
       displayName: Linting Backend
+      
 
-    - script: echo "heloo"
-      displayName: 'Test backend'
-
-  - job: frontend
-    displayName: Linting frontend
-
+  - job: docker
+    dependsOn: backend
+    displayName: docker build
     steps:
     - checkout: self
-
-    - script: echo "heloo"
-      displayName: 'Test frontend'
+    - task: DockerInstaller@0
+      displayName: 'Install Docker'
+      inputs:
+        dockerVersion: 'latest'
+    - task: Docker@2
+      condition: succeeded()
+      displayName: 'Build frontend image'
+      inputs:
+        containerRegistry: 'dockerHubConnection'
+        repository: '$(dockerhub_image_name)/$(imageName)-frontend'
+        command: 'buildAndPush'
+        Dockerfile: 'src/feedback_frontend/src/Dockerfile'
+        tags: |
+          $(Build.BuildId)
+    - task: Docker@2
+      displayName: 'Build backend image'
+      condition: succeeded()
+      inputs:
+        containerRegistry: 'dockerHubConnection'
+        repository: '$(DOCKER_USERNAME)/$(imageName)-backend'
+        command: 'buildAndPush'
+        Dockerfile: 'src/feedback_backend/Dockerfile'
+        tags: |
+          $(Build.BuildId)
+    
+      
