@@ -109,6 +109,6 @@ stages:
               inlineScript: |
                  aws eks update-kubeconfig --name feedback-cluster --region us-east-1
           - script: |
-              kubectl apply -f $(Build.SourceDirectory)/k8s/ -n ${{ parameters.environment }}
+              kubectl apply -f $(Build.SourceDirectory)/k8s/ -n $(parameters.environment)
             displayName: 'Deploy to EKS'
               
