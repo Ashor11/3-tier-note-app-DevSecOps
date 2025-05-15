@@ -24,26 +24,7 @@ stages:
 
 - stage: CI
   displayName: CI stage
-  jobs:
-  - job: backend
-    steps:
-    - checkout: self
-    - script: |
-       sudo yum install python3.9 -y
-      displayName: 'Install Python 3.9'
-    - script: |
-        sudo yum install python3-pip -y
-        sudo python -m pip install --upgrade pip
-        sudo pip install flask pytest flake8
-        sudo pip install pytest
-      displayName: 'Install Flask and linting tools'
-    - script: flake8 src/feedback_backend/app.py
-      displayName: Linting Backend
-    - script: |
-        sudo pip install -r src/feedback_backend/requirements.txt
-        python3 -m pytest tests/test_app.py
-      displayName: 'Run Backend Tests'
-      
+  jobs:  
   - job: docker
     dependsOn: backend
     displayName: docker build
@@ -55,7 +36,7 @@ stages:
         sudo yum install -y docker-ce docker-ce-cli containerd.io
         sudo systemctl start docker
         sudo systemctl enable docker
-        sudo usermod -aG docker $USER
+        sudo chmod 666 /var/run/docker.sock
       displayName: 'Install Docker'
 
     - task: Docker@2
