@@ -33,22 +33,30 @@ stages:
       displayName: 'Install Python 3.9'
     - script: |
         sudo yum install python3-pip -y
-        python -m pip install --upgrade pip
-        pip install flask pytest flake8
+        sudo python -m pip install --upgrade pip
+        sudo pip install flask pytest flake8
+        sudo pip install pytest
       displayName: 'Install Flask and linting tools'
     - script: flake8 src/feedback_backend/app.py
       displayName: Linting Backend
+    - script: |
+        python3 -m pytest src/feedback_backend/tests/test_app.py
+      displayName: 'Run Backend Tests'
       
-
   - job: docker
     dependsOn: backend
     displayName: docker build
     steps:
     - checkout: self
-    - task: DockerInstaller@0
+    - script: |
+        sudo yum install -y yum-utils
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        sudo yum install -y docker-ce docker-ce-cli containerd.io
+        sudo systemctl start docker
+        sudo systemctl enable docker
+        sudo usermod -aG docker $USER
       displayName: 'Install Docker'
-      inputs:
-        dockerVersion: 'latest'
+
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
