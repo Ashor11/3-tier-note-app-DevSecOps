@@ -25,7 +25,28 @@ stages:
 - stage: CI
   displayName: CI stage
   jobs:  
+  - job: backend
+    steps:
+    - checkout: self
+    - script: |
+       sudo yum install python3.9 -y
+      displayName: 'Install Python 3.9'
+    - script: |
+        sudo yum install python3-pip -y
+        sudo python -m pip install --upgrade pip
+        sudo pip install flask pytest flake8
+        sudo pip install pytest
+      displayName: 'Install Flask and linting tools'
+    - script: flake8 src/feedback_backend/app.py
+      displayName: Linting Backend
+    - script: |
+        sudo pip install -r src/feedback_backend/requirements.txt
+        python3 -m pytest tests/test_app.py
+      displayName: 'Run Backend Tests'
+      
+
   - job: docker
+    dependsOn: backend
     displayName: docker build
     steps:
     - checkout: self
@@ -49,9 +70,9 @@ stages:
         Dockerfile: 'src/feedback_frontend/src/Dockerfile'
         tags: |
           $(Build.BuildId)
+
     - task: Docker@2
       displayName: 'Build backend image'
-      condition: succeeded()
       inputs:
         containerRegistry: 'dockerHubConnection'
         repository: '$(DOCKER_USERNAME)/$(imageName)-backend'
@@ -60,5 +81,35 @@ stages:
         buildContext: '$(System.DefaultWorkingDirectory)'
         tags: |
           $(Build.BuildId)
-    
-      
+- stage: CD
+  jobs:
+  - deployment: deployToDev
+    displayName: Deploy to $(parameters.environment) EKS
+    environment: '$(parameters.environment)'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: ReplaceTokens@5
+            displayName: 'Replace tokens in Kubernetes YAML'
+            inputs:
+              rootDirectory: '$(System.DefaultWorkingDirectory)'        
+              targetFiles: 'k8s/*.yaml'
+              tokenPrefix: '${'
+              tokenSuffix: '}'
+              escapeType: 'json'
+              verbosity: 'detailed'
+
+          - task: AWSShellScript@1
+            displayName: 'Update kubeconfig'
+            inputs:
+              awsCredentials: 'aws-credentials'
+              regionName: 'us-east-1'
+              scriptType: 'inline'
+              inlineScript: |
+                 aws eks update-kubeconfig --name feedback-cluster --region us-east-1
+          - script: |
+              kubectl apply -f $(Build.SourceDirectory)/k8s/ -n ${{ parameters.environment }}
+            displayName: 'Deploy to EKS'
+              
