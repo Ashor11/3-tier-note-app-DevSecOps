@@ -29,7 +29,6 @@ stages:
     steps:
     - checkout: self
     - script: |
-       sudo yum update
        sudo yum install python3.9 -y
       displayName: 'Install Python 3.9'
     - script: |
