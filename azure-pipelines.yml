@@ -32,7 +32,7 @@ stages:
        sudo yum install python3.9 -y
       displayName: 'Install Python 3.9'
     - script: |
-        yum install python3-pip -y
+        sudo yum install python3-pip -y
         python -m pip install --upgrade pip
         pip install flask pytest flake8
       displayName: 'Install Flask and linting tools'
