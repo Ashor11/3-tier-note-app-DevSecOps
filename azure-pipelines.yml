@@ -14,7 +14,7 @@ variables:
   
 parameters:
   - name: environment
-    displayName: Environment
+    displayName: environment
     type: string
     default: ASH-env
     values:
@@ -83,8 +83,8 @@ stages:
 - stage: CD
   jobs:
   - deployment: deployToDev
-    displayName: Deploy to $(parameters.environment) EKS
-    environment: '$(parameters.environment)'
+    displayName: Deploy to ${{ parameters.environment }} EKS
+    environment: '${{ parameters.environment }}'
     strategy:
       runOnce:
         deploy:
@@ -109,6 +109,6 @@ stages:
               inlineScript: |
                  aws eks update-kubeconfig --name feedback-cluster --region us-east-1
           - script: |
-              kubectl apply -f $(Build.SourceDirectory)/k8s/ -n $(parameters.environment)
+              kubectl apply -f $(Build.SourceDirectory)/k8s/ -n ${{ parameters.environment }}
             displayName: 'Deploy to EKS'
               
