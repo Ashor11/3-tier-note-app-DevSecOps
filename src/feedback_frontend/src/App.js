@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import MessageForm from './MessageForm';
 import MessageList from './MessageList';
+import Header from './Header';
+import Footer from './Footer';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -14,7 +16,7 @@ function App() {
       const data = await response.json();
       setMessages(data);
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      console.error("Error fetching tasks:", error);
     }
   }
 
@@ -28,7 +30,7 @@ function App() {
       await fetch(`/api/message/${id}`, { method: 'DELETE' });
       fetchMessages();
     } catch (error) {
-      console.error("Error deleting message:", error);
+      console.error("Error deleting task:", error);
     }
   };
 
@@ -44,15 +46,22 @@ function App() {
       // re-fetch messages from the backend.
       fetchMessages();
     } catch (error) {
-      console.error("Error adding message:", error);
+      console.error("Error adding task:", error);
     }
   };
 
   return (
     <div className="App">
-      <h1>Feedback App</h1>
-      <MessageForm onAddMessage={handleAddMessage} />
-      <MessageList messages={messages} onDelete={handleDelete} />
+      <Header />
+      <div className="container" style={{ 
+        maxWidth: '800px', 
+        margin: '0 auto', 
+        padding: '0 1rem' 
+      }}>
+        <MessageForm onAddMessage={handleAddMessage} />
+        <MessageList messages={messages} onDelete={handleDelete} />
+      </div>
+      <Footer />
     </div>
   );
 }

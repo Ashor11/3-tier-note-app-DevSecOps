@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Feedback App</title>
+  <title>Ashour To Do List</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -15,9 +15,29 @@
       margin: 0;
     }
 
+    header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    footer {
+      background-color: #f5f5f5;
+      color: #333;
+      padding: 20px;
+      width: 100%;
+      text-align: center;
+      margin-top: 30px;
+      border-top: 1px solid #ddd;
+    }
+
     h1 {
-      color: #222;
-      margin-bottom: 20px;
+      color: #fff;
+      margin: 0;
     }
 
     form {
@@ -36,13 +56,13 @@
     }
 
     input[type="text"]:focus {
-      border-color: #006eff;
+      border-color: #4CAF50;
       outline: none;
     }
 
     button {
       padding: 10px 20px;
-      background-color: #006eff;
+      background-color: #4CAF50;
       border: none;
       color: white;
       font-size: 16px;
@@ -52,7 +72,7 @@
     }
 
     button:hover {
-      background-color: #0052cc;
+      background-color: #45a049;
     }
 
     h2 {
@@ -79,29 +99,36 @@
     }
 
     .delete-btn {
-      background: #ff4d4f;
+      background: none;
       border: none;
-      color: white;
+      color: #ff4d4f;
       padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 14px;
+      font-size: 18px;
       cursor: pointer;
     }
 
     .delete-btn:hover {
-      background: #cc0000;
+      color: #cc0000;
     }
   </style>
 </head>
 <body>
-  <h1>🚀 Share Your Feedback</h1>
+  <header>
+    <h1>Ashour To Do List</h1>
+  </header>
+
   <form id="form">
-    <input type="text" id="msg" placeholder="Type your message...">
-    <button type="submit">Send</button>
+    <input type="text" id="msg" placeholder="Enter your task or note...">
+    <button type="submit">Add Task</button>
   </form>
 
-  <h2>📋 Submitted Messages</h2>
+  <h2>📋 My Tasks and Notes</h2>
   <ul id="messages"></ul>
+
+  <footer>
+    <p>© 2023 Ashour To Do List - Organize your tasks efficiently</p>
+    <p>Keep track of your daily tasks and boost your productivity</p>
+  </footer>
 
   <script>
     const form = document.getElementById('form');
@@ -132,6 +159,16 @@
       const res = await fetch('/api/messages');
       const data = await res.json();
       messagesList.innerHTML = '';
+      
+      if (data.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.textContent = 'No tasks yet. Add a new task above!';
+        emptyMsg.style.textAlign = 'center';
+        emptyMsg.style.color = '#666';
+        messagesList.appendChild(emptyMsg);
+        return;
+      }
+      
       data.reverse().forEach(m => {
         const li = document.createElement('li');
         li.innerHTML = `
