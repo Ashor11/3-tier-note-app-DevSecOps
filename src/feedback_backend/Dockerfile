@@ -7,6 +7,6 @@ COPY src/feedback_backend/requirements.txt ./
 
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY src/feedback_backend/ .
 
 CMD ["python", "app.py"]

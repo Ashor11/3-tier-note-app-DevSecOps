@@ -92,9 +92,9 @@ stages:
           - checkout: self
          # - task: ReplaceTokens@6
           ## inputs:
-            #  rootDirectory: '$(System.DefaultWorkingDirectory)'        
+             # rootDirectory: '$(System.DefaultWorkingDirectory)'        
              # targetFiles: 'k8s/*.yaml'
-              #tokenPrefix: '${'
+             # tokenPrefix: '${'
              # tokenSuffix: '}'
              # escapeType: 'json'
              # verbosity: 'detailed'
