@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: $(DOCKER_USERNAME)/$(imageName)-backend:${BUILD_BUILDID}
+        image: ${DOCKER_USERNAME}/${imageName}-backend:${BUILD_BUILDID}
         ports:
         - containerPort: 5000
         env:
