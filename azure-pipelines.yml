@@ -78,7 +78,7 @@ stages:
         buildContext: '$(System.DefaultWorkingDirectory)'
         tags: |
           $(Build.BuildId)
-          
+
 - stage: CD
   displayName: CD stage
   jobs:
@@ -90,7 +90,7 @@ stages:
         deploy:
           steps:
           - checkout: self
-          - task: ReplaceTokens@5
+          - task: ReplaceTokens@6
             displayName: 'Replace tokens in Kubernetes YAML'
             inputs:
               rootDirectory: '$(System.DefaultWorkingDirectory)'        
