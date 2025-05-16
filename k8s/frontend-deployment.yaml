@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: ${DOCKER_USERNAME}/${IMAGE_NAME}-frontend:${IMAGE_TAG}
+        image: {DOCKER_USERNAME}-frontend
         ports:
         - containerPort: 80
 ---
