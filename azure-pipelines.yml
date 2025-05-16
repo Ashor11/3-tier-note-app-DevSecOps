@@ -40,8 +40,8 @@ stages:
              # escapeType: 'json'
              # verbosity: 'detailed'
           - script: |
-             sed -i "s|image: \${DOCKER_USERNAME}/\${imageName}-frontend:\${BUILD_BUILDID}|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" k8s/frontend-deployment.yaml
-             sed -i "s|image: \${DOCKER_USERNAME}/\${imageName}-backend:\${BUILD_BUILDID}|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" k8s/backend-deployment.yaml
+             sed -i "s|image: ${DOCKER_USERNAME}/${imageName}-frontend:${BUILD_BUILDID}|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" k8s/frontend-deployment.yaml
+             sed -i "s|image: ${DOCKER_USERNAME}/${imageName}-backend:${BUILD_BUILDID}|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" k8s/backend-deployment.yaml
              echo "Updated frontend-deployment.yaml:"
              grep -A 1 "image:" k8s/frontend-deployment.yaml
              echo "Updated backend-deployment.yaml:"
@@ -58,7 +58,7 @@ stages:
               inlineScript: |
                  aws eks update-kubeconfig --name my-eks-cluster --region us-east-1 
           - script: |
-              kubectl create namespace ${{ parameters.environment }}
+              kubectl create namespace ${{ parameters.environment }} --ignore-existing-namespace || true
               kubectl replace -f k8s/ -n ${{ parameters.environment }} --force
             displayName: 'Deploy to EKS'
             workingDirectory: '$(System.DefaultWorkingDirectory)'
