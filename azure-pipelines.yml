@@ -16,9 +16,9 @@ parameters:
   - name: environment
     displayName: environment
     type: string
-    default: ASH-env
+    default: dev
     values:
-      - ASH-env
+      - dev
 stages:
 
 - stage: CD
