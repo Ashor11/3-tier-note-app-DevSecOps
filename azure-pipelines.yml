@@ -110,7 +110,7 @@ stages:
                  aws eks update-kubeconfig --name my-eks-cluster --region us-east-1 
           - script: |
               kubectl create namespace ${{ parameters.environment }}
-              kubectl apply -f k8s/ -n ${{ parameters.environment }}
+              kubectl Replace -f k8s/ -n ${{ parameters.environment }} --force
             displayName: 'Deploy to EKS'
             workingDirectory: '$(System.DefaultWorkingDirectory)'
               
