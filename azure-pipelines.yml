@@ -31,19 +31,24 @@ stages:
         deploy:
           steps:
           - checkout: self
-          - task: ReplaceTokens@5
-            displayName: 'Replace tokens in Kubernetes YAML'
-            inputs:
-              rootDirectory: '$(System.DefaultWorkingDirectory)'        
-              targetFiles: 'k8s/*.yaml'
-              tokenPrefix: '${'
-              tokenSuffix: '}'
-              escapeType: 'json'
-              verbosity: 'detailed'
-            env:  # Explicitly pass variables (optional but recommended)
-              DOCKER_USERNAME: $(DOCKER_USERNAME)
-              IMAGE_NAME: $(imageName)
-              IMAGE_TAG: $(imageTag)
+         # - task: ReplaceTokens@6
+          ## inputs:
+            #  rootDirectory: '$(System.DefaultWorkingDirectory)'        
+             # targetFiles: 'k8s/*.yaml'
+              #tokenPrefix: '${'
+             # tokenSuffix: '}'
+             # escapeType: 'json'
+             # verbosity: 'detailed'
+          - script: |
+             sed -i "s|image: \${DOCKER_USERNAME}/\${imageName}-frontend:\${BUILD_BUILDID}|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" k8s/frontend-deployment.yaml
+             sed -i "s|image: \${DOCKER_USERNAME}/\${imageName}-backend:\${BUILD_BUILDID}|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" k8s/backend-deployment.yaml
+             echo "Updated frontend-deployment.yaml:"
+             grep -A 1 "image:" k8s/frontend-deployment.yaml
+             echo "Updated backend-deployment.yaml:"
+             grep -A 1 "image:" k8s/backend-deployment.yaml
+            displayName: 'Update image tags in Kubernetes files'
+            workingDirectory: '$(System.DefaultWorkingDirectory)'
+
           - task: AWSShellScript@1
             displayName: 'Update kubeconfig'
             inputs:
@@ -54,7 +59,7 @@ stages:
                  aws eks update-kubeconfig --name my-eks-cluster --region us-east-1 
           - script: |
               kubectl create namespace ${{ parameters.environment }}
-              kubectl Replace -f k8s/ -n ${{ parameters.environment }} --force
+              kubectl replace -f k8s/ -n ${{ parameters.environment }} --force
             displayName: 'Deploy to EKS'
             workingDirectory: '$(System.DefaultWorkingDirectory)'
               
