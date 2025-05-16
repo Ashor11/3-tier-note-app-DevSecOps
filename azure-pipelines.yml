@@ -48,7 +48,7 @@ stages:
               regionName: 'us-east-1'
               scriptType: 'inline'
               inlineScript: |
-                 aws eks update-kubeconfig --name feedback-cluster --region us-east-1
+                 aws eks update-kubeconfig --name feedback-cluster --region us-east-1 --no-verify-ssl
           - script: |
               kubectl apply -f $(Build.SourceDirectory)/k8s/ -n ${{ parameters.environment }}
             displayName: 'Deploy to EKS'
