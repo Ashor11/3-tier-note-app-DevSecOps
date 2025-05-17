@@ -117,14 +117,15 @@ stages:
         targetType: 'inline'
         script: |
           echo "Running Helm template..."
-          CHART_VERSION=$(helm template note-chart-$(Build.BuildId) my_repo/note-chart --version 0.1.$(Build.BuildId) | grep "version:" | head -n 1 | awk '{print $2}')
+          CHART_NAME="myrepo/note-chart"        
           EXPECTED_VERSION="0.1.$(Build.BuildId)"
-          echo "Found chart version: $CHART_VERSION"
           echo "Expected version: $EXPECTED_VERSION"
-          if [ "$CHART_VERSION" == "$EXPECTED_VERSION" ]; then
-            echo " Chart version matches expected version: $EXPECTED_VERSION"
+          SEARCH_RESULT=$(helm search repo $CHART_NAME --version $EXPECTED_VERSION)
+
+          if echo "$SEARCH_RESULT" | grep -q "$EXPECTED_VERSION"; then
+             echo "Chart version $EXPECTED_VERSION exists"
           else
-            echo " Chart version mismatch. Expected: $EXPECTED_VERSION, Found: $CHART_VERSION"
+            echo "Chart version $EXPECTED_VERSION does NOT exist"
             exit 1
           fi
 
