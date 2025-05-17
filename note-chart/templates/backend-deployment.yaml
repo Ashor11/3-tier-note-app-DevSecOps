@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: {{ .Values.names.back }}
-        image: {{ .Values.image.back }}
+        image: "{{ .Values.image.back }}"
         ports:
         - containerPort: {{ .Values.port.back.port }}
         env:

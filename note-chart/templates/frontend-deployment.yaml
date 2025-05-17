@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
       - name: {{ .Values.names.front }}
-        image: {{ .Values.image.front }}
+        image: "{{ .Values.image.front }}"
         ports:
-        - containerPort: {{ .Values.port.front }}
+        - containerPort: {{ .Values.port.front.port }}
 ---
 apiVersion: v1
 kind: Service

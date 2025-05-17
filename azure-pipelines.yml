@@ -105,7 +105,13 @@ stages:
           curl -u "$(helm_repo_user):$(helm_repo_token)" \
                --upload-file "$CHART_FILE" \
                "$(repository)/note-chart"
-
+    - task: Bash@3
+      displayName: 'helm repo index'
+      inputs:
+        targetType: 'inline'
+        script: |
+          helm repo add my_repo $(repository) --username $(helm_repo_user) --password $(helm_repo_token)
+          helm repo update
     - task: Bash@3
       displayName: 'Check Helm Chart Version'
       inputs:
@@ -150,13 +156,7 @@ stages:
               scriptType: 'inline'
               inlineScript: |
                  aws eks update-kubeconfig --name my-eks-cluster --region us-east-1 
-          - task: Bash@3
-            displayName: 'helm repo index'
-            inputs:
-              targetType: 'inline'
-              script: |
-                helm repo add my_repo $(repository)
-                helm repo update
+  
           - task: Bash@3
             displayName: 'helm install'
             condition: succeeded()
