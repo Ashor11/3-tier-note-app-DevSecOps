@@ -101,9 +101,9 @@ stages:
         targetType: 'inline'
         script: |
           helm package note-chart --version 0.1.$(Build.BuildId) --app-version 1.0.$(Build.BuildId)
-          CHART_FILE="note-chart-0.1.$(Build.BuildId).tgz"
+          CHART_FILE=
           curl -u "$(helm_repo_user):$(helm_repo_token)" \
-               --upload-file "$CHART_FILE" \
+               -T "note-chart-0.1.$(Build.BuildId).tgz" \
                "$(repository)/note-chart"
     - task: Bash@3
       displayName: 'helm repo index'
