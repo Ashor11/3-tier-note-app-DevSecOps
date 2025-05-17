@@ -101,7 +101,7 @@ stages:
         targetType: 'inline'
         script: |
           helm package note-chart --version 0.1.$(Build.BuildId) --app-version 1.0.$(Build.BuildId)
-          CHART_FILE="/home/ansible/myagent/myagent/_work/9/s/note-chart-0.1.$(Build.BuildId).tgz"
+          CHART_FILE="note-chart-0.1.$(Build.BuildId).tgz"
           curl -u "$(helm_repo_user):$(helm_repo_token)" \
                --upload-file "$CHART_FILE" \
                "$(repository)/$CHART_FILE"
