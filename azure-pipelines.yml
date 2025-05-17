@@ -117,7 +117,7 @@ stages:
         targetType: 'inline'
         script: |
           echo "Running Helm template..."
-          CHART_VERSION=$(helm template note-chart-${{Build.BuildId}} my_repo/note-chart --version 0.1.${{Build.BuildId}} | grep "version:" | head -n 1 | awk '{print $2}')
+          CHART_VERSION="$(helm template note-chart-${{Build.BuildId}} my_repo/note-chart --version 0.1.${{Build.BuildId}} | grep "version:" | head -n 1 | awk '{print $2}')
           EXPECTED_VERSION="0.1.${{Build.BuildId}}"
           echo "Found chart version: $CHART_VERSION"
           echo "Expected version: $EXPECTED_VERSION"
