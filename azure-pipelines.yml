@@ -7,6 +7,7 @@ pool:
 
 variables:
   - group: docker_vars
+  - group: jfrog-helm-repo
   - name: imageName
     value: feedback-app
   - name: imageTag
@@ -78,7 +79,38 @@ stages:
         buildContext: '$(System.DefaultWorkingDirectory)'
         tags: |
           $(Build.BuildId)
-          
+
+  - job: helm
+    dependsOn: docker
+    steps:
+    - checkout: self
+    - displayName: 'replace image tags in helm chart'
+      workingDirectory : '$(System.DefaultWorkingDirectory)'
+      script: |
+        sed -i "s|{DOCKER_USERNAME}-frontend|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" note-chart/values.yaml
+        sed -i "s|{DOCKER_USERNAME}-backend|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" note-chart/values.yaml
+        echo "Updated values.yaml:"
+        grep -A 1 "image:" note-chart/values.yaml
+
+    - displayName: 'build helm chart'
+      script: |
+        helm package note-chart --version 0.1.${{ Build.BuildId }} --app-version 1.0.${{ Build.BuildId }}
+        curl -u $(helm_repo_user):$(helm_repo_token)  -T note-chart-0.1.${{ Build.BuildId }}.tgz   $(repository)/note-chart-0.1.${{ Build.BuildId }}.tgz
+   
+    - script: |
+       echo "Running Helm template..."
+       CHART_VERSION=$(helm template note-chart-$(Build.BuildId) note-chart/my_repo --version 0.1.$(Build.BuildId) | grep "version:" | head -n 1 | awk '{print $2}')
+       EXPECTED_VERSION="0.1.$(Build.BuildId)"
+       echo "Found chart version: $CHART_VERSION"
+       echo "Expected version: $EXPECTED_VERSION"
+       if [ "$CHART_VERSION" == "$EXPECTED_VERSION" ]; then
+         echo " Chart version matches expected version: $EXPECTED_VERSION"
+       else
+         echo " Chart version mismatch. Expected: $EXPECTED_VERSION, Found: $CHART_VERSION"
+         exit 1
+       fi
+      displayName: 'Check Helm Chart Version'
+
 - stage: CD
   displayName: CD stage
   jobs:
@@ -98,16 +130,6 @@ stages:
              # tokenSuffix: '}'
              # escapeType: 'json'
              # verbosity: 'detailed'
-          - script: |
-             sed -i "s|image: {DOCKER_USERNAME}-frontend|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" k8s/frontend-deployment.yaml
-             sed -i "s|image: {DOCKER_USERNAME}-backend|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" k8s/backend-deployment.yaml
-             echo "Updated frontend-deployment.yaml:"
-             grep -A 1 "image:" k8s/frontend-deployment.yaml
-             echo "Updated backend-deployment.yaml:"
-             grep -A 1 "image:" k8s/backend-deployment.yaml
-            displayName: 'Update image tags in Kubernetes files'
-            workingDirectory: '$(System.DefaultWorkingDirectory)'
-
           - task: AWSShellScript@1
             displayName: 'Update kubeconfig'
             inputs:
@@ -116,9 +138,12 @@ stages:
               scriptType: 'inline'
               inlineScript: |
                  aws eks update-kubeconfig --name my-eks-cluster --region us-east-1 
-          - script: |
-              kubectl create namespace ${{ parameters.environment }} --ignore-existing-namespace || true
-              kubectl replace -f k8s/ -n ${{ parameters.environment }} --force
-            displayName: 'Deploy to EKS'
-            workingDirectory: '$(System.DefaultWorkingDirectory)'
+          - displayName: 'helm repo index'
+            script: |
+             helm repo add my_repo $(repository)
+             helm repo update
+          - displayName: 'helm install'
+            condition: succeeded()
+            script: |
+             helm install note-chart-${{ Build.BuildId }}  note-chart/my_repo --version 0.1.${{ Build.BuildId }}
               
