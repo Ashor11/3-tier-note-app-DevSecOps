@@ -104,7 +104,7 @@ stages:
           CHART_FILE="note-chart-0.1.$(Build.BuildId).tgz"
           curl -u "$(helm_repo_user):$(helm_repo_token)" \
                --upload-file "$CHART_FILE" \
-               "$(repository)/$CHART_FILE"
+               "$(repository)/note-chart"
 
     - task: Bash@3
       displayName: 'Check Helm Chart Version'
