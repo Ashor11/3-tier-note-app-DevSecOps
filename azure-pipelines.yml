@@ -4,7 +4,7 @@ trigger:
       - main
 pool:
   name: Default
-
+  
 variables:
   - group: docker_vars
   - group: jfrog-helm-repo
@@ -84,32 +84,41 @@ stages:
     dependsOn: docker
     steps:
     - checkout: self
-    - displayName: 'replace image tags in helm chart'
-      workingDirectory : '$(System.DefaultWorkingDirectory)'
-      script: |
-        sed -i "s|{DOCKER_USERNAME}-frontend|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" note-chart/values.yaml
-        sed -i "s|{DOCKER_USERNAME}-backend|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" note-chart/values.yaml
-        echo "Updated values.yaml:"
-        grep -A 1 "image:" note-chart/values.yaml
+    - task: Bash@3
+      displayName: 'replace image tags in helm chart'
+      inputs:
+        workingDirectory: '$(System.DefaultWorkingDirectory)'
+        targetType: 'inline'
+        script: |
+          sed -i "s|{DOCKER_USERNAME}-frontend|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" note-chart/values.yaml
+          sed -i "s|{DOCKER_USERNAME}-backend|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" note-chart/values.yaml
+          echo "Updated values.yaml:"
+          grep -A 1 "image:" note-chart/values.yaml
 
-    - displayName: 'build helm chart'
-      script: |
-        helm package note-chart --version 0.1.${{ Build.BuildId }} --app-version 1.0.${{ Build.BuildId }}
-        curl -u $(helm_repo_user):$(helm_repo_token)  -T note-chart-0.1.${{ Build.BuildId }}.tgz   $(repository)/note-chart-0.1.${{ Build.BuildId }}.tgz
+    - task: Bash@3
+      displayName: 'build helm chart'
+      inputs:
+        targetType: 'inline'
+        script: |
+          helm package note-chart --version 0.1.$(Build.BuildId) --app-version 1.0.$(Build.BuildId)
+          curl -u $(helm_repo_user):$(helm_repo_token) -T note-chart-0.1.$(Build.BuildId).tgz $(repository)/note-chart-0.1.$(Build.BuildId).tgz
    
-    - script: |
-       echo "Running Helm template..."
-       CHART_VERSION=$(helm template note-chart-$(Build.BuildId) note-chart/my_repo --version 0.1.$(Build.BuildId) | grep "version:" | head -n 1 | awk '{print $2}')
-       EXPECTED_VERSION="0.1.$(Build.BuildId)"
-       echo "Found chart version: $CHART_VERSION"
-       echo "Expected version: $EXPECTED_VERSION"
-       if [ "$CHART_VERSION" == "$EXPECTED_VERSION" ]; then
-         echo " Chart version matches expected version: $EXPECTED_VERSION"
-       else
-         echo " Chart version mismatch. Expected: $EXPECTED_VERSION, Found: $CHART_VERSION"
-         exit 1
-       fi
+    - task: Bash@3
       displayName: 'Check Helm Chart Version'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "Running Helm template..."
+          CHART_VERSION=$(helm template note-chart-$(Build.BuildId) note-chart/my_repo --version 0.1.$(Build.BuildId) | grep "version:" | head -n 1 | awk '{print $2}')
+          EXPECTED_VERSION="0.1.$(Build.BuildId)"
+          echo "Found chart version: $CHART_VERSION"
+          echo "Expected version: $EXPECTED_VERSION"
+          if [ "$CHART_VERSION" == "$EXPECTED_VERSION" ]; then
+            echo " Chart version matches expected version: $EXPECTED_VERSION"
+          else
+            echo " Chart version mismatch. Expected: $EXPECTED_VERSION, Found: $CHART_VERSION"
+            exit 1
+          fi
 
 - stage: CD
   displayName: CD stage
@@ -138,12 +147,17 @@ stages:
               scriptType: 'inline'
               inlineScript: |
                  aws eks update-kubeconfig --name my-eks-cluster --region us-east-1 
-          - displayName: 'helm repo index'
-            script: |
-             helm repo add my_repo $(repository)
-             helm repo update
-          - displayName: 'helm install'
+          - task: Bash@3
+            displayName: 'helm repo index'
+            inputs:
+              targetType: 'inline'
+              script: |
+                helm repo add my_repo $(repository)
+                helm repo update
+          - task: Bash@3
+            displayName: 'helm install'
             condition: succeeded()
-            script: |
-             helm install note-chart-${{ Build.BuildId }}  note-chart/my_repo --version 0.1.${{ Build.BuildId }}
-              
+            inputs:
+              targetType: 'inline'
+              script: |
+                helm install note-chart-$(Build.BuildId) note-chart/my_repo --version 0.1.$(Build.BuildId)
