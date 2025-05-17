@@ -90,8 +90,8 @@ stages:
         workingDirectory: '$(System.DefaultWorkingDirectory)'
         targetType: 'inline'
         script: |
-          sed -i "s|{DOCKER_USERNAME}-frontend|image: $(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" note-chart/values.yaml
-          sed -i "s|{DOCKER_USERNAME}-backend|image: $(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" note-chart/values.yaml
+          sed -i "s|{DOCKER_USERNAME}-frontend|$(DOCKER_USERNAME)/$(imageName)-frontend:$(Build.BuildId)|g" note-chart/values.yaml
+          sed -i "s|{DOCKER_USERNAME}-backend|$(DOCKER_USERNAME)/$(imageName)-backend:$(Build.BuildId)|g" note-chart/values.yaml
           echo "Updated values.yaml:"
           grep -A 1 "image:" note-chart/values.yaml
 
