@@ -117,7 +117,7 @@ stages:
         targetType: 'inline'
         script: |
           echo "Running Helm template..."
-          CHART_NAME="myrepo/note-chart"        
+          CHART_NAME="my_repo/note-chart"        
           EXPECTED_VERSION="0.1.$(Build.BuildId)"
           echo "Expected version: $EXPECTED_VERSION"
           SEARCH_RESULT=$(helm search repo $CHART_NAME --version $EXPECTED_VERSION)
