@@ -24,7 +24,7 @@ stages:
 - stage: CI
   displayName: CI stage
   jobs:  
-  - job: backend
+  - job: backend-test
     steps:
     - checkout: self
     - script: |
@@ -44,7 +44,7 @@ stages:
       displayName: 'Run Backend Tests'
       
   - job: docker
-    dependsOn: backend
+    dependsOn: backend-test
     displayName: docker build
     steps:
     - checkout: self
