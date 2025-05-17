@@ -101,10 +101,9 @@ stages:
         targetType: 'inline'
         script: |
           helm package note-chart --version 0.1.$(Build.BuildId) --app-version 1.0.$(Build.BuildId)
-          CHART_FILE=
-          curl -u "$(helm_repo_user):$(helm_repo_token)" \
-               -T "note-chart-0.1.$(Build.BuildId).tgz" \
-               "$(repository)/note-chart"
+          curl -u "$(helm_repo_user):$(helm_repo_token)" -X PUT \
+               -T note-chart-0.1.$(Build.BuildId).tgz \
+               "$(repository)/note-chart-0.1.$(Build.BuildId).tgz"
     - task: Bash@3
       displayName: 'helm repo index'
       inputs:
@@ -118,7 +117,7 @@ stages:
         targetType: 'inline'
         script: |
           echo "Running Helm template..."
-          CHART_VERSION=$(helm template note-chart-$(Build.BuildId) note-chart/my_repo --version 0.1.$(Build.BuildId) | grep "version:" | head -n 1 | awk '{print $2}')
+          CHART_VERSION=$(helm template note-chart-0.1.$(Build.BuildId) note-chart/my_repo --version 0.1.$(Build.BuildId) | grep "version:" | head -n 1 | awk '{print $2}')
           EXPECTED_VERSION="0.1.$(Build.BuildId)"
           echo "Found chart version: $CHART_VERSION"
           echo "Expected version: $EXPECTED_VERSION"
