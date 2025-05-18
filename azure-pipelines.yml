@@ -3,7 +3,7 @@ trigger:
     include:
       - main
 pool:
-  name: 'Azure Pipelines' 
+  name: Default
 variables:
   - group: docker_vars
   - group: jfrog-helm-repo
@@ -55,7 +55,10 @@ stages:
         configMode: 'manual'
         projectKey: 'ashouryasser11_feedback-app.git'  # Unique project key
         projectName: 'feedback-app.git'  # Display name in SonarCloud
-
+        extraProperties: |
+          sonar.sources=src
+          sonar.python.coverage.reportPaths=coverage.xml
+          sonar.exclusions=**/tests/**
     - task: SonarCloudAnalyze@1
       displayName: 'Run SonarCloud Analysis'
 
