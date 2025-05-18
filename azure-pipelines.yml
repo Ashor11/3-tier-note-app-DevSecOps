@@ -3,7 +3,7 @@ trigger:
     include:
       - main
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Default
 variables:
   - group: docker_vars
   - group: jfrog-helm-repo
@@ -47,9 +47,10 @@ stages:
     - checkout: self
       fetchDepth: 0
     - script: |
-        sudo yum install -y java-11-openjdk java-11-openjdk-devel
-        export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+        sudo dnf install java-11-amazon-corretto -y
+        export JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto
         echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
+        echo "JAVA_HOME set to $JAVA_HOME"
         java -version
       displayName: 'Install Java 11'
     - task: SonarCloudPrepare@3
