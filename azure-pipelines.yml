@@ -47,7 +47,7 @@ stages:
     steps:
     - checkout: self
       fetchDepth: 0
-    - task: SonarQubePrepare@3
+    - task: SonarQubePrepare@1
       displayName: 'Configure SonarCloud Analysis'
       inputs:
         SonarQube: 'sonarservice'  # Must match the service connection name
@@ -57,11 +57,11 @@ stages:
         projectKey: 'ashouryasser11_feedback-app.git'  # Unique project key
         projectName: 'feedback-app.get'  # Display name in SonarCloud
 
-    - task: SonarQubeAnalyze@3
+    - task: SonarQubeAnalyze@1
       displayName: 'Run SonarCloud Analysis'
 
   # Step 5: Publish results to SonarCloud
-    - task: SonarQubePublish@3
+    - task: SonarQubePublish@1
       displayName: 'Publish Quality Gate Results'
   - job: docker
     dependsOn: test
