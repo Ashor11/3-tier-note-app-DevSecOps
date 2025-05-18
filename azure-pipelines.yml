@@ -60,8 +60,8 @@ stages:
         organization: 'ashouryasser11'  # Your SonarCloud organization
         scannerMode: 'CLI'
         configMode: 'manual'
-        projectKey: 'ashouryasser11_feedback-app.git'  # Unique project key
-        projectName: 'feedback-app.git'  # Display name in SonarCloud
+        cliProjectKey: 'ashouryasser11_feedback-app.git'  # Unique project key
+        cliProjectName: 'feedback-app'  # Display name in SonarCloud
         extraProperties: |
           sonar.sources=src
           sonar.python.coverage.reportPaths=coverage.xml
