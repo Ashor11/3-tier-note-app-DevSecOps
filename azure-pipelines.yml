@@ -69,7 +69,7 @@ stages:
       displayName: 'Run SonarCloud Analysis'
 
   # Step 5: Publish results to SonarCloud
-    - task: SonarCloudPublish@
+    - task: SonarCloudPublish@3
       displayName: 'Publish Quality Gate Results'
   - job: docker
     dependsOn: sonarqube
