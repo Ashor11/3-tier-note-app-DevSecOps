@@ -46,6 +46,12 @@ stages:
     steps:
     - checkout: self
       fetchDepth: 0
+    - task: JavaToolInstaller@0
+      displayName: 'Install Java 11'
+      inputs:
+        versionSpec: '11'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
     - task: SonarCloudPrepare@1
       displayName: 'Configure SonarCloud Analysis'
       inputs:
