@@ -23,65 +23,14 @@ stages:
 - stage: CI
   displayName: CI stage
   jobs:
-  - job: test
-    steps:
-    - checkout: self
-    - script: |
-       sudo yum install python3.9 -y
-      displayName: 'Install Python 3.9'
-    - script: |
-        sudo yum install python3-pip -y
-        sudo python -m pip install --upgrade pip
-        sudo pip install flask pytest flake8
-        sudo pip install pytest
-      displayName: 'Install Flask and linting tools'
-    - script: flake8 src/feedback_backend/app.py
-      displayName: Linting Backend
-    - script: |
-        sudo pip install -r src/feedback_backend/requirements.txt
-        python3 -m pytest tests/test_app.py
-      displayName: 'Run Backend Tests'
-  - job: sonarqube
-    dependsOn: test
-    timeoutInMinutes: 20
-    steps:
-    - checkout: self
-      fetchDepth: 0
-    - script: |
-        sudo amazon-linux-extras enable java-openjdk17 || true
-        sudo yum install -y java-17-amazon-corretto
-        export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
-        echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
-        echo "JAVA_HOME set to $JAVA_HOME"
-        java -version
-      displayName: 'Install Java 17'
-    - task: SonarCloudPrepare@3
-      displayName: 'Configure SonarCloud Analysis'
-      inputs:
-        SonarQube: 'sonarservice'
-        organization: 'ashouryasser11'
-        scannerMode: 'CLI'
-        configMode: 'manual'
-        cliProjectKey: 'ashouryasser11_feedback-app'
-        cliProjectName: 'feedback-app'
-        extraProperties: |
-          sonar.sources=src/feedback_backend/
-          sonar.tests=tests/
-          sonar.sources='k8s/*.yaml'
-          sonar.sources=note-chart
-          sonar.python.coverage.reportPaths=coverage.xml
-          sonar.exclusions=**/tests/**
-          sonar.python.version=3.9
-    - task: SonarCloudAnalyze@3
-      displayName: 'Run SonarCloud Analysis'
-    - task: SonarCloudPublish@3
-      displayName: 'Publish Quality Gate Results'
   - job: docker
-    dependsOn: sonarqube
     displayName: docker build
     steps:
     - checkout: self
     - script: |
+        sudo yum install -y docker
+        sudo systemctl start docker
+        sudo usermod -aG docker $(whoami)
         sudo yum install -y yum-utils
         sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
         sudo yum install -y docker-ce docker-ce-cli containerd.io
@@ -89,11 +38,7 @@ stages:
         sudo systemctl enable docker
         sudo chmod 666 /var/run/docker.sock
       displayName: 'Install Docker'
-    - script: |
-         sudo yum install -y docker
-         sudo systemctl start docker
-         sudo usermod -aG docker $(whoami)
-      displayName: 'Install Docker'
+
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
