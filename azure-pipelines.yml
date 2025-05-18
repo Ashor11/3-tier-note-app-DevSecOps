@@ -34,6 +34,7 @@ stages:
         sudo python -m pip install --upgrade pip
         sudo pip install flask pytest flake8
         sudo pip install pytest
+        sudo pip install flask pytest flake8 pytest-cov
       displayName: 'Install Flask and linting tools'
     - script: flake8 src/feedback_backend/app.py
       displayName: Linting Backend
