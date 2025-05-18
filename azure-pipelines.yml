@@ -39,7 +39,7 @@ stages:
       displayName: Linting Backend
     - script: |
         sudo pip install -r src/feedback_backend/requirements.txt
-        python3 -m pytest tests/test_app.py
+        python3 -m pytest tests/test_app.py  --cov=src/feedback_backend --cov-report=xml
       displayName: 'Run Backend Tests'
   - job: sonarqube
     dependsOn: test
@@ -65,11 +65,8 @@ stages:
         cliProjectKey: 'ashouryasser11_feedback-app'
         cliProjectName: 'feedback-app'
         extraProperties: |
-          sonar.sources=src/feedback_backend/
-          sonar.tests=tests/
-          sonar.sources='k8s/*.yaml'
-          sonar.sources=note-chart
-          sonar.python.coverage.reportPaths=coverage.xml
+          sonar.sources=src/feedback_backend/,tests/,k8s/*.yaml,note-chart
+          sonar.python.coverage.reportPaths=$(System.DefaultWorkingDirectory)/coverage.xml
           sonar.exclusions=**/tests/**
           sonar.python.version=3.9
     - task: SonarCloudAnalyze@3
