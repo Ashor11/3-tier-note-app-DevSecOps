@@ -65,7 +65,7 @@ stages:
         cliProjectKey: 'ashouryasser11_feedback-app'
         cliProjectName: 'feedback-app'
         extraProperties: |
-          sonar.sources=src/feedback_backend/
+          sonar.sources=.
           sonar.python.coverage.reportPaths=coverage.xml
           sonar.exclusions=**/tests/**
     - task: SonarCloudAnalyze@3
