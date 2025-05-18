@@ -23,7 +23,7 @@ parameters:
 stages:
 - stage: CI
   displayName: CI stage
-  jobs:  
+  jobs:
   - job: test
     steps:
     - checkout: self
@@ -43,6 +43,8 @@ stages:
         python3 -m pytest tests/test_app.py
       displayName: 'Run Backend Tests'
   - job: sonarqube
+    pool:
+      vmImage: 'ubuntu-latest'
     dependsOn: test
     steps:
     - checkout: self
