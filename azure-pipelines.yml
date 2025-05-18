@@ -45,6 +45,11 @@ stages:
   - job: sonarqube
     dependsOn: test
     steps:
+    - task: JavaToolInstaller@0
+      inputs:
+        versionSpec: '11'  # or '17'
+        jdkArchitectureOption: 'x64'
+        jdkSourceOption: 'PreInstalled'
     - checkout: self
       fetchDepth: 0
     - task: SonarCloudPrepare@1
