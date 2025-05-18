@@ -42,7 +42,27 @@ stages:
         sudo pip install -r src/feedback_backend/requirements.txt
         python3 -m pytest tests/test_app.py
       displayName: 'Run Backend Tests'
-      
+  - job: sonarqube
+    dependsOn: test
+    steps:
+    - checkout: self
+      fetchDepth: 0
+    - task: SonarQubePrepare@5
+      displayName: 'Configure SonarCloud Analysis'
+      inputs:
+        SonarQube: 'sonarservice'  # Must match the service connection name
+        organization: 'ashouryasser11'  # Your SonarCloud organization
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        projectKey: 'ashouryasser11_feedback-app.git'  # Unique project key
+        projectName: 'feedback-app.get'  # Display name in SonarCloud
+
+    - task: SonarQubeAnalyze@5
+      displayName: 'Run SonarCloud Analysis'
+
+  # Step 5: Publish results to SonarCloud
+    - task: SonarQubePublish@5
+      displayName: 'Publish Quality Gate Results'
   - job: docker
     dependsOn: test
     displayName: docker build
