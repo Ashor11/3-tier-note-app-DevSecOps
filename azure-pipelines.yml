@@ -87,7 +87,11 @@ stages:
         sudo systemctl enable docker
         sudo chmod 666 /var/run/docker.sock
       displayName: 'Install Docker'
-
+    - script: |
+         sudo yum install -y docker
+         sudo systemctl start docker
+         sudo usermod -aG docker $(whoami)
+      displayName: 'Install Docker'
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
