@@ -67,7 +67,7 @@ stages:
         extraProperties: |
           sonar.sources=.
           sonar.python.coverage.reportPaths=coverage.xml
-          sonar.exclusions=**/tests/**, **/build/**, **/*.min.js, **/*.min.css
+          sonar.exclusions=**/tests/**
           sonar.python.version=3.9
     - task: SonarCloudAnalyze@3
       displayName: 'Run SonarCloud Analysis'
