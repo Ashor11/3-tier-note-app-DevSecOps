@@ -43,41 +43,35 @@ stages:
       displayName: 'Run Backend Tests'
   - job: sonarqube
     dependsOn: test
+    timeoutInMinutes: 20
     steps:
     - checkout: self
       fetchDepth: 0
     - script: |
-        sudo dnf install java-11-amazon-corretto -y
-        export JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto
+        sudo amazon-linux-extras enable java-openjdk17 || true
+        sudo yum install -y java-17-amazon-corretto
+        export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
         echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
         echo "JAVA_HOME set to $JAVA_HOME"
         java -version
-      displayName: 'Install Java 11'
+      displayName: 'Install Java 17'
     - task: SonarCloudPrepare@3
       displayName: 'Configure SonarCloud Analysis'
       inputs:
-        SonarQube: 'sonarservice'  # Must match the service connection name
-        organization: 'ashouryasser11'  # Your SonarCloud organization
+        SonarQube: 'sonarservice'
+        organization: 'ashouryasser11'
         scannerMode: 'CLI'
         configMode: 'manual'
-        cliProjectKey: 'ashouryasser11_feedback-app.git'  # Unique project key
-        cliProjectName: 'feedback-app'  # Display name in SonarCloud
+        cliProjectKey: 'ashouryasser11_feedback-app'
+        cliProjectName: 'feedback-app'
         extraProperties: |
           sonar.sources=src
           sonar.python.coverage.reportPaths=coverage.xml
           sonar.exclusions=**/tests/**
-    - script: |
-          sudo amazon-linux-extras enable java-openjdk17 || true
-          sudo yum install -y java-17-amazon-corretto
-          export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
-          echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
-          echo "JAVA_HOME set to $JAVA_HOME"
-          java -version
-      displayName: 'Install Java 17'
+          sonar.language=py
+          sonar.inclusions=**/*.py
     - task: SonarCloudAnalyze@3
       displayName: 'Run SonarCloud Analysis'
-
-  # Step 5: Publish results to SonarCloud
     - task: SonarCloudPublish@3
       displayName: 'Publish Quality Gate Results'
   - job: docker
