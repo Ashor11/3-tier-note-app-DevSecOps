@@ -52,7 +52,7 @@ stages:
         echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
         java -version
       displayName: 'Install Java 11'
-    - task: SonarCloudPrepare@1
+    - task: SonarCloudPrepare@3
       displayName: 'Configure SonarCloud Analysis'
       inputs:
         SonarQube: 'sonarservice'  # Must match the service connection name
@@ -65,11 +65,11 @@ stages:
           sonar.sources=src
           sonar.python.coverage.reportPaths=coverage.xml
           sonar.exclusions=**/tests/**
-    - task: SonarCloudAnalyze@1
+    - task: SonarCloudAnalyze@3
       displayName: 'Run SonarCloud Analysis'
 
   # Step 5: Publish results to SonarCloud
-    - task: SonarCloudPublish@1
+    - task: SonarCloudPublish@
       displayName: 'Publish Quality Gate Results'
   - job: docker
     dependsOn: sonarqube
