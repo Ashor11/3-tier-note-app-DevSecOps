@@ -3,7 +3,7 @@ trigger:
     include:
       - main
 pool:
-  name: Default
+      vmImage: 'ubuntu-latest'
   
 variables:
   - group: docker_vars
@@ -43,8 +43,7 @@ stages:
         python3 -m pytest tests/test_app.py
       displayName: 'Run Backend Tests'
   - job: sonarqube
-    pool:
-      vmImage: 'ubuntu-latest'
+   
     dependsOn: test
     steps:
     - checkout: self
@@ -66,7 +65,7 @@ stages:
     - task: SonarCloudPublish@1
       displayName: 'Publish Quality Gate Results'
   - job: docker
-    dependsOn: test
+    dependsOn: sonarqube
     displayName: docker build
     steps:
     - checkout: self
