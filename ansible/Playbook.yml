@@ -72,17 +72,25 @@
         state: present
 
     # Docker installation
+    - name: Remove podman-docker if installed
+      shell: sudo dnf remove -y podman-docker
+      args:
+        executable: /bin/bash
+      ignore_errors: yes
+
     - name: Install Docker
       shell: |
         sudo dnf -y install dnf-plugins-core
         sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-        sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        sudo dnf install -y --allowerasing docker-ce docker-ce-cli containerd.io
+        sudo groupadd -f docker
         sudo systemctl start docker
         sudo systemctl enable docker
         sudo usermod -aG docker $(whoami)
-        sudo chmod 666 /var/run/docker.sock
+        sudo ln -sf /var/run/docker.sock /var/run/docker.sock
       args:
         executable: /bin/bash
+      ignore_errors: yes
 
     # Verify Docker installation
     - name: Verify Docker installation
