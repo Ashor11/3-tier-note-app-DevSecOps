@@ -1,11 +1,16 @@
-# 📬 Note App (3-Tier Kubernetes Project with CI/CD)
+# 📬 Note App (3-Tier Kubernetes Project with DevSecOps Pipeline)
 
-A fully containerized and Kubernetes-ready feedback application consisting of:
+A fully containerized and Kubernetes-ready feedback application with complete DevSecOps pipeline:
 
 - 🖼️ **Frontend**: React app served via NGINX  
 - 🧠 **Backend**: Python Flask REST API  
 - 🛢️ **Database**: PostgreSQL 13  
-- 🔁 **CI/CD**: Azure DevOps YAML pipelines with self-hosted EC2 agents  
+- 🔁 **CI/CD**: Azure DevOps YAML pipelines with self-hosted EC2 agents
+- 🔒 **Security**: SonarQube code analysis
+- 🚢 **Containers**: Docker with multi-stage builds
+- ☸️ **Orchestration**: Kubernetes (EKS) with Helm charts
+- 🤖 **Infrastructure**: Ansible automation for agent setup
+- 📊 **Artifact Management**: JFrog Artifactory for Helm charts
 
 Perfect for DevOps demos, Kubernetes practice, and hands-on CI/CD pipelines.
 
@@ -27,15 +32,21 @@ User Browser
 
 ## ⚙️ Tech Stack
 
-| Layer         | Technology                 |
-|---------------|----------------------------|
-| Frontend      | React, served by NGINX     |
-| Backend       | Python 3.9, Flask API      |
-| Database      | PostgreSQL 13              |
-| CI/CD         | Azure DevOps Pipelines     |
-| Containers    | Docker                     |
-| Orchestration | Kubernetes (Amazon EKS)    |
-| Local Dev     | Docker Desktop + K8s       |
+| Layer           | Technology                       |
+|-----------------|----------------------------------|
+| Frontend        | React, served by NGINX           |
+| Backend         | Python 3.9, Flask API            |
+| Database        | PostgreSQL 13                    |
+| CI/CD           | Azure DevOps Pipelines           |
+| Containers      | Docker                           |
+| Orchestration   | Kubernetes (Amazon EKS)          |
+| Package Manager | Helm Charts                      |
+| Code Quality    | SonarQube                        |
+| Testing         | pytest, pytest-cov               |
+| Linting         | flake8, ESLint                   |
+| Infrastructure  | Ansible                          |
+| Registry        | Docker Hub, JFrog Artifactory    |
+| Local Dev       | Docker Desktop + K8s             |
 
 ---
 
@@ -115,7 +126,7 @@ kubectl port-forward svc/frontend-service 8081:80
 - Manual validation before production rollout
 - Code quality analysis with SonarQube
 
-CI/CD pipeline defined in `azure-pipelines.yaml`.
+CI/CD pipeline defined in `azure-pipelines.yml`.
 
 ### Pipeline Flow
 
@@ -128,13 +139,74 @@ The pipeline uses the `sonar-project.properties` file to configure code quality 
 
 ---
 
+## 🛠️ Azure DevOps Agent Setup with Ansible
+
+This project includes Ansible playbooks to set up Azure DevOps agents with all the necessary dependencies.
+
+### Files
+
+- `minimal_setup.yml`: Minimal playbook that installs all dependencies and tools
+- `ansible/Playbook.yml`: Comprehensive playbook with more configuration options
+- `ansible/inventory.ini`: Inventory file where you define your target hosts
+- `ansible/ansible.cfg`: Configuration for Ansible
+
+### Prerequisites
+
+1. Ansible installed on your control machine
+2. SSH access to target hosts
+3. Sudo privileges on target hosts
+
+### Usage
+
+#### 1. Configure your inventory
+
+Edit the `ansible/inventory.ini` file to add your target hosts:
+
+```ini
+[azure_devops_agents]
+agent1 ansible_host=192.168.1.100 ansible_user=ec2-user
+```
+
+#### 2. Run the playbook
+
+```bash
+cd ansible
+ansible-playbook -i inventory.ini Playbook.yml
+```
+
+#### 3. For local testing
+
+```bash
+cd ansible
+ansible-playbook -i inventory.ini Playbook.yml -c local --become
+```
+
+### What gets installed
+
+The playbook installs and configures:
+
+- Python 3.9 with pip and required packages (Flask, pytest, flake8, pytest-cov)
+- Java 17 (for SonarQube)
+- Docker CE
+- Helm 3
+- AWS CLI v2
+- kubectl
+- JFrog CLI
+
+---
+
 ## 📂 Project Structure
 
 ```
 .
 ├── README.md
-├── azure-pipelines.yaml
+├── azure-pipelines.yml
 ├── sonar-project.properties
+├── minimal_setup.yml
+├── ansible/
+│   ├── Playbook.yml
+│   ├── inventory.ini
+│   └── ansible.cfg
 ├── k8s/
 │   ├── backend-deployment.yaml
 │   ├── db-secret.yaml
@@ -154,12 +226,20 @@ The pipeline uses the `sonar-project.properties` file to configure code quality 
 │
 ├── src/
 │   ├── note_backend/
+│   │   ├── __init__.py
 │   │   ├── app.py
 │   │   ├── Dockerfile
+│   │   └── requirements.txt
 │   ├── note_frontend/
 │   │   ├── public/
 │   │   ├── src/
-│   │   ├── nginx.conf
+│   │   │   ├── App.js
+│   │   │   ├── Footer.js
+│   │   │   ├── Header.js
+│   │   │   ├── MessageForm.js
+│   │   │   ├── MessageList.js
+│   │   │   └── nginx.conf
+│   │   ├── .eslintrc.json
 │   │   └── Dockerfile
 │   └── note_db/
 │       └── init.sql

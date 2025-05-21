@@ -20,8 +20,21 @@ parameters:
     values:
       - dev
 stages:
+- stage: pre-request
+  displayName: pre-request stage
+  jobs:
+    - job: pre-request
+      displayName: pre-request job
+      steps:
+       - checkout: self
+       - script: |
+            ansible-playbook -i ansible/inventory ansible/playbook.yaml
+         workingDirectory: '$(System.DefaultWorkingDirectory)'
+         displayName: 'Run Ansible Playbook to install dependencies'
+          
 - stage: CI
   displayName: CI stage
+  dependsOn: pre-request
   jobs:
   - job: test
     steps:

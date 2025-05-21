@@ -1,0 +1,99 @@
+---
+# Minimal Ansible playbook for Azure DevOps dependencies
+- name: Setup Azure DevOps Dependencies
+  hosts: all
+  become: yes
+  tasks:
+    # Python setup
+    - name: Install Python and dependencies
+      yum:
+        name:
+          - python39
+          - python3-pip
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Python packages
+      shell: |
+        python3.9 -m pip install --upgrade pip
+        python3.9 -m pip install flask pytest flake8 pytest-cov psycopg2-binary
+      args:
+        executable: /bin/bash
+
+    # Java setup
+    - name: Install Java
+      yum:
+        name: java-17-openjdk-devel
+        state: present
+      when: ansible_os_family == "RedHat"
+      ignore_errors: yes
+
+    # Docker setup
+    - name: Install Docker dependencies
+      yum:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Add Docker repo
+      shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      args:
+        executable: /bin/bash
+      when: ansible_os_family == "RedHat"
+
+    - name: Install Docker
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start Docker (if service exists)
+      shell: systemctl start docker && systemctl enable docker
+      args:
+        executable: /bin/bash
+      ignore_errors: yes
+
+    # Helm setup
+    - name: Install Helm
+      shell: |
+        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        chmod 700 get_helm.sh
+        ./get_helm.sh
+      args:
+        executable: /bin/bash
+        creates: /usr/local/bin/helm
+
+    # AWS CLI setup
+    - name: Install AWS CLI
+      shell: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        yum install -y unzip
+        unzip -o awscliv2.zip
+        ./aws/install --update
+      args:
+        executable: /bin/bash
+        creates: /usr/local/bin/aws
+
+    # kubectl setup
+    - name: Install kubectl
+      shell: |
+        curl -LO "https://dl.k8s.io/release/stable.txt"
+        curl -LO "https://dl.k8s.io/release/$(cat stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        mv kubectl /usr/local/bin/
+      args:
+        executable: /bin/bash
+        creates: /usr/local/bin/kubectl
+
+    # JFrog CLI setup
+    - name: Install JFrog CLI
+      shell: curl -fL https://install-cli.jfrog.io | sh
+      args:
+        executable: /bin/bash
+        creates: /usr/local/bin/jfrog
