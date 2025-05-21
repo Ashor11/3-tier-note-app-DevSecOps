@@ -169,7 +169,7 @@ stages:
           fi
 
   - job: sonarqube2
-    dependsOn: test
+    dependsOn: helm
     timeoutInMinutes: 20
     steps:
     - checkout: self
