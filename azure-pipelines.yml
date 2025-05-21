@@ -36,8 +36,49 @@ stages:
   displayName: CI stage
   dependsOn: prerequest
   jobs:
+  - job: test
+    steps:
+    - checkout: self
+    - script: flake8 src/note_backend/app.py
+      displayName: Linting Backend
+    - script: |
+        sudo pip install -r src/note_backend/requirements.txt
+        python3 -m pytest tests/test_app.py  --cov=src/note_backend --cov-report=xml
+      displayName: 'Run Backend Tests'
+  - job: sonarqube
+    dependsOn: test
+    timeoutInMinutes: 20
+    steps:
+    - checkout: self
+      fetchDepth: 0
+    - script: |
+        export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
+        echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
+        echo "JAVA_HOME set to $JAVA_HOME"
+        java -version
+      displayName: 'Install Java 17'
+    - task: SonarCloudPrepare@3
+      displayName: 'Configure SonarCloud Analysis'
+      inputs:
+        SonarQube: 'sonarservice'
+        organization: 'ashouryasser11'
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'ashouryasser11_note-app-DevSecOps.git'
+        cliProjectName: 'note-app-DevSecOps'
+        extraProperties: |
+          sonar.sources=src/note_backend
+          sonar.python.coverage.reportPaths=$(System.DefaultWorkingDirectory)/coverage.xml
+          sonar.exclusions=**/tests/**
+          sonar.python.version=3.9
+    - task: SonarCloudAnalyze@3
+      displayName: 'Run SonarCloud Analysis'
+    - task: SonarCloudPublish@3
+      displayName: 'Publish Quality Gate Results'
+  jobs:
   - job: docker
     displayName: build docker images
+    dependsOn: sonarqube
     steps:
     - checkout: self
     - task: Docker@2
