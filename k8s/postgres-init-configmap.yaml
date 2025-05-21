@@ -4,9 +4,9 @@ metadata:
   name: postgres-init-script
 data:
   init.sql: |
-    CREATE DATABASE feedback;
+    CREATE DATABASE note;
 
-    \connect feedback;
+    \connect note;
 
     CREATE TABLE messages (
         id SERIAL PRIMARY KEY,

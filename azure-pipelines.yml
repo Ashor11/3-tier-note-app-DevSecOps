@@ -8,7 +8,7 @@ variables:
   - group: docker_vars
   - group: jfrog-helm-repo
   - name: imageName
-    value: feedback-app
+    value: note-app
   - name: imageTag
     value: $(Build.BuildId)
   
@@ -36,11 +36,11 @@ stages:
         sudo pip install pytest
         sudo pip install flask pytest flake8 pytest-cov
       displayName: 'Install Flask and linting tools'
-    - script: flake8 src/feedback_backend/app.py
+    - script: flake8 src/note_backend/app.py
       displayName: Linting Backend
     - script: |
-        sudo pip install -r src/feedback_backend/requirements.txt
-        python3 -m pytest tests/test_app.py  --cov=src/feedback_backend --cov-report=xml
+        sudo pip install -r src/note_backend/requirements.txt
+        python3 -m pytest tests/test_app.py  --cov=src/note_backend --cov-report=xml
       displayName: 'Run Backend Tests'
   - job: sonarqube
     dependsOn: test
@@ -63,10 +63,10 @@ stages:
         organization: 'ashouryasser11'
         scannerMode: 'CLI'
         configMode: 'manual'
-        cliProjectKey: 'ashouryasser11_feedback-app'
-        cliProjectName: 'feedback-app'
+        cliProjectKey: 'ashouryasser11_note-app'
+        cliProjectName: 'note-app'
         extraProperties: |
-          sonar.sources=src/feedback_backend
+          sonar.sources=src/note_backend
           sonar.python.coverage.reportPaths=$(System.DefaultWorkingDirectory)/coverage.xml
           sonar.exclusions=**/tests/**
           sonar.python.version=3.9
@@ -99,7 +99,7 @@ stages:
         repository: '$(DOCKER_USERNAME)/$(imageName)-frontend'
         command: 'buildAndPush'
         buildContext: '$(System.DefaultWorkingDirectory)'
-        Dockerfile: 'src/feedback_frontend/src/Dockerfile'
+        Dockerfile: 'src/note_frontend/src/Dockerfile'
         tags: |
           $(Build.BuildId)
 
@@ -109,7 +109,7 @@ stages:
         containerRegistry: 'dockerHubConnection'
         repository: '$(DOCKER_USERNAME)/$(imageName)-backend'
         command: 'buildAndPush'
-        Dockerfile: 'src/feedback_backend/Dockerfile'
+        Dockerfile: 'src/note_backend/Dockerfile'
         buildContext: '$(System.DefaultWorkingDirectory)'
         tags: |
           $(Build.BuildId)

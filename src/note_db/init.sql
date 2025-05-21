@@ -1,6 +1,6 @@
-CREATE DATABASE feedback;
+CREATE DATABASE note;
 
-\c feedback;
+\c note;
 
 CREATE TABLE messages (
     id SERIAL PRIMARY KEY,
