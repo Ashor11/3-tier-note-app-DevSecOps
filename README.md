@@ -1,6 +1,6 @@
 # 📬 Note App (3-Tier Kubernetes Project with DevSecOps Pipeline)
 
-A fully containerized and Kubernetes-ready feedback application with complete DevSecOps pipeline:
+A fully containerized and Kubernetes-ready note application with complete DevSecOps pipeline:
 
 - 🖼️ **Frontend**: React app served via NGINX  
 - 🧠 **Backend**: Python Flask REST API  
