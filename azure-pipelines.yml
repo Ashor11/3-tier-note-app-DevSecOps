@@ -166,10 +166,8 @@ stages:
           else
             echo "Chart version $EXPECTED_VERSION does NOT exist"
             exit 1
-          fi
-
   - job: sonarqube2
-    dependsOn: helm
+    dependsOn: test
     timeoutInMinutes: 20
     steps:
     - checkout: self
@@ -192,12 +190,12 @@ stages:
         cliProjectKey: 'ashouryasser11_feedback-app'
         cliProjectName: 'feedback-app'
         extraProperties: |
-          sonar.sources=note-chart
-
+          sonar.sources=note-chart/values.yaml
     - task: SonarCloudAnalyze@3
       displayName: 'Run SonarCloud Analysis'
     - task: SonarCloudPublish@3
       displayName: 'Publish Quality Gate Results'
+
 
 - stage: CD
   displayName: CD stage
