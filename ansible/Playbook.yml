@@ -7,7 +7,7 @@
     python_version: "python3.9"
     java_version: "java-17-openjdk-devel"
     docker_compose_version: "1.29.2"
-
+    docker_user: "{{ ansible_user }}"  # Uses the current Ansible user
   tasks:
     # Base system setup
     - name: Install common dependencies
@@ -70,47 +70,102 @@
         line: 'JAVA_HOME=/usr/lib/jvm/{{ java_version | replace("-devel", "") }}'
         state: present
 
-    # Docker setup
-    - name: Install Docker dependencies
-      yum:
+    # 1. Install prerequisites
+    - name: Install required packages
+      package:
         name:
-          - yum-utils
-          - device-mapper-persistent-data
-          - lvm2
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - software-properties-common
         state: present
-      when: ansible_os_family == "RedHat"
+      when: ansible_os_family == 'Debian'
 
-    - name: Add Docker repo
-      get_url:
-        url: https://download.docker.com/linux/centos/docker-ce.repo
-        dest: /etc/yum.repos.d/docker-ce.repo
+    - name: Install yum-utils (RHEL/CentOS)
+      package:
+        name: yum-utils
+        state: present
+      when: ansible_os_family == 'RedHat'
 
-    - name: Install Docker
-      yum:
+    # 2. Add Docker GPG key
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    # 3. Add Docker repository
+    - name: Add Docker repository (Debian/Ubuntu)
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable"
+        state: present
+        filename: docker-ce
+      when: ansible_os_family == 'Debian'
+
+    - name: Add Docker repository (RHEL/CentOS)
+      yum_repository:
+        name: docker-ce
+        description: Docker CE Stable
+        baseurl: https://download.docker.com/linux/centos/$releasever/$basearch/stable
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+        enabled: yes
+      when: ansible_os_family == 'RedHat'
+
+    # 4. Install Docker
+    - name: Install Docker packages
+      package:
         name:
           - docker-ce
           - docker-ce-cli
           - containerd.io
         state: present
 
-    - name: Start and enable Docker
+    # 5. Start and enable Docker service
+    - name: Ensure Docker is running
       service:
         name: docker
         state: started
         enabled: yes
 
-    - name: Add current user to docker group
+    # 6. Add user to docker group
+    - name: Add user to docker group
       user:
-        name: "{{ ansible_user_id }}"
+        name: "{{ docker_user }}"
         groups: docker
         append: yes
 
-    # Docker Compose setup
-    - name: Install Docker Compose
-      get_url:
-        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64"
-        dest: /usr/local/bin/docker-compose
-        mode: '0755'
+    # 7. Update PATH if needed
+    - name: Ensure Docker is in PATH
+      lineinfile:
+        path: /etc/environment
+        regexp: '^PATH='
+        line: 'PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin/docker"'
+        state: present
+
+    # 8. Verify installation
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Display Docker version
+      debug:
+        msg: "Docker version: {{ docker_version.stdout }}"
+
+    # 9. Test Docker functionality
+    - name: Test Docker with hello-world
+      command: docker run hello-world
+      register: hello_test
+      ignore_errors: yes
+
+    - name: Show Docker test results
+      debug:
+        msg: "{{ hello_test.stdout }}"
+      when: hello_test is not failed
+   
 
     # Helm setup
     - name: Install Helm
