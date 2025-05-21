@@ -39,16 +39,6 @@ stages:
   - job: test
     steps:
     - checkout: self
-    - script: |
-       sudo yum install python3.9 -y
-      displayName: 'Install Python 3.9'
-    - script: |
-        sudo yum install python3-pip -y
-        sudo python -m pip install --upgrade pip
-        sudo pip install flask pytest flake8
-        sudo pip install pytest
-        sudo pip install flask pytest flake8 pytest-cov
-      displayName: 'Install Flask and linting tools'
     - script: flake8 src/note_backend/app.py
       displayName: Linting Backend
     - script: |
@@ -62,8 +52,6 @@ stages:
     - checkout: self
       fetchDepth: 0
     - script: |
-        sudo amazon-linux-extras enable java-openjdk17 || true
-        sudo yum install -y java-17-amazon-corretto
         export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
         echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
         echo "JAVA_HOME set to $JAVA_HOME"
@@ -89,20 +77,6 @@ stages:
       displayName: 'Publish Quality Gate Results'
   - job: docker
     dependsOn: sonarqube
-    displayName: docker build
-    steps:
-    - checkout: self
-    - script: |
-        sudo yum install -y docker
-        sudo systemctl start docker
-        sudo usermod -aG docker $(whoami)
-        sudo yum install -y yum-utils
-        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-        sudo yum install -y docker-ce docker-ce-cli containerd.io
-        sudo systemctl start docker
-        sudo systemctl enable docker
-        sudo chmod 666 /var/run/docker.sock
-      displayName: 'Install Docker'
 
     - task: Docker@2
       condition: succeeded()
@@ -132,11 +106,7 @@ stages:
     displayName: build HELM Chart
     steps:
     - checkout: self
-    - script: |
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        chmod 700 get_helm.sh
-        ./get_helm.sh
-      displayName: 'Install Helm'  
+    
     - task: Bash@3
       displayName: 'replace image tags in helm chart'
       inputs:
