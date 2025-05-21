@@ -203,4 +203,4 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                helm install note-chart-$(Build.BuildId) note-chart/my_repo --version 0.1.$(Build.BuildId)
+                helm  upgrade --install note-chart note-chart/my_repo --version 0.1.$(Build.BuildId)
