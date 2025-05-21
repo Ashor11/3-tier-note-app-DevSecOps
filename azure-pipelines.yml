@@ -63,8 +63,8 @@ stages:
         organization: 'ashouryasser11'
         scannerMode: 'CLI'
         configMode: 'manual'
-        cliProjectKey: 'ashouryasser11_note-app'
-        cliProjectName: 'note-app'
+        cliProjectKey: 'ashouryasser11_note-app-DevSecOps.git'
+        cliProjectName: 'note-app-DevSecOps'
         extraProperties: |
           sonar.sources=src/note_backend
           sonar.python.coverage.reportPaths=$(System.DefaultWorkingDirectory)/coverage.xml
