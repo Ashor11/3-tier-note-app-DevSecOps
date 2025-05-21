@@ -60,37 +60,33 @@
 
     # Java setup
     - name: Install Java
-      yum:
-        name: "{{ java_version }}"
-        state: present
-      when: ansible_os_family == "RedHat"
+      shell: |
+        sudo yum install -y java-17-openjdk-devel
+        sudo alternatives --set java /usr/lib/jvm/java-17-openjdk/bin/java
+        sudo mkdir -p /usr/java
+        sudo ln -sf /usr/lib/jvm/java-17-openjdk /usr/java/default
+      args:
+        executable: /bin/bash
 
-    - name: Set JAVA_HOME in environment file
-      lineinfile:
-        path: /etc/environment
-        line: 'JAVA_HOME=/usr/lib/jvm/{{ java_version | replace("-devel", "") }}'
-        state: present
+    - name: Set JAVA_HOME globally
+      shell: |
+        echo "export JAVA_HOME=/usr/java/default" | sudo tee /etc/profile.d/java.sh
+        echo "export PATH=\$JAVA_HOME/bin:\$PATH" | sudo tee -a /etc/profile.d/java.sh
+        sudo chmod +x /etc/profile.d/java.sh
+        source /etc/profile.d/java.sh
+      args:
+        executable: /bin/bash
 
-    - name: Create Java symlinks
-      file:
-        src: "/usr/lib/jvm/{{ java_version | replace('-devel', '') }}/bin/{{ item }}"
-        dest: "/usr/bin/{{ item }}"
-        state: link
-      with_items:
-        - java
-        - javac
-      ignore_errors: yes
-
-    - name: Set JAVA_HOME in profile
-      lineinfile:
-        path: /etc/profile.d/java.sh
-        line: 'export JAVA_HOME=/usr/lib/jvm/{{ java_version | replace("-devel", "") }}'
-        create: yes
-        state: present
+    - name: Create global symlinks
+      shell: |
+        sudo ln -sf /usr/java/default/bin/java /usr/bin/java
+        sudo ln -sf /usr/java/default/bin/javac /usr/bin/javac
+      args:
+        executable: /bin/bash
 
     - name: Verify Java installation
       shell: |
-        source /etc/profile.d/java.sh
+        which java
         java -version
       args:
         executable: /bin/bash
