@@ -23,7 +23,7 @@ stages:
 - stage: prerequest
   displayName: 'pre-request stage'
   jobs:
-    - job: pre-request
+    - job: prerequest
       displayName: pre-request job
       steps:
        - checkout: self
