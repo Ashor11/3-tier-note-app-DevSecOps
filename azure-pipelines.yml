@@ -168,7 +168,7 @@ stages:
             exit 1
           fi
 
-  - job: sonarqube
+  - job: sonarqube2
     dependsOn: test
     timeoutInMinutes: 20
     steps:
