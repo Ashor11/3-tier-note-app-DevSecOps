@@ -76,14 +76,11 @@
       shell: |
         sudo dnf -y install dnf-plugins-core
         sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-        sudo dnf install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-        sudo chmod 666 /var/run/docker.sock
-        sudo systemctl enable --now docker
-        sudo usermod -aG docker $(whoami)
-        sudo yum install -y docker-ce docker-ce-cli containerd.io
+        sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
         sudo systemctl start docker
         sudo systemctl enable docker
-       
+        sudo usermod -aG docker $(whoami)
+        sudo chmod 666 /var/run/docker.sock
       args:
         executable: /bin/bash
 
