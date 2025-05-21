@@ -20,8 +20,8 @@ parameters:
     values:
       - dev
 stages:
-- stage: pre-request
-  displayName: pre-request stage
+- stage: prerequest
+  displayName: 'pre-request stage'
   jobs:
     - job: pre-request
       displayName: pre-request job
@@ -34,7 +34,7 @@ stages:
           
 - stage: CI
   displayName: CI stage
-  dependsOn: pre-request
+  dependsOn: prerequest
   jobs:
   - job: test
     steps:
