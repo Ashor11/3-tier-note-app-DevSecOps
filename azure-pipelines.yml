@@ -77,7 +77,6 @@ stages:
       displayName: 'Publish Quality Gate Results'
   - job: docker
     dependsOn: sonarqube
-
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
