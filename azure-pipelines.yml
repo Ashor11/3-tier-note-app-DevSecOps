@@ -72,6 +72,17 @@ stages:
   - job: docker
     dependsOn: sonarqube
     steps:
+    - script: |
+        sudo yum install -y docker
+        sudo systemctl start docker
+        sudo usermod -aG docker $(whoami)
+        sudo yum install -y yum-utils
+        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+        sudo yum install -y docker-ce docker-ce-cli containerd.io
+        sudo systemctl start docker
+        sudo systemctl enable docker
+        sudo chmod 666 /var/run/docker.sock
+      displayName: 'Install Docker'
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
