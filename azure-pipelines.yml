@@ -52,11 +52,13 @@ stages:
     - checkout: self
       fetchDepth: 0
     - script: |
-        export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
-        echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
-        echo "JAVA_HOME set to $JAVA_HOME"
+        sudo yum install -y java-17-openjdk-devel
+        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+        export PATH=$JAVA_HOME/bin:$PATH
+        echo "##vso[task.setvariable variable=JAVA_HOME]/usr/lib/jvm/java-17-openjdk"
+        echo "##vso[task.setvariable variable=PATH]$PATH:/usr/lib/jvm/java-17-openjdk/bin"
         java -version
-      displayName: 'Install Java 17'
+      displayName: 'Install Java for SonarCloud'
     - task: SonarCloudPrepare@3
       displayName: 'Configure SonarCloud Analysis'
       inputs:
