@@ -1,32 +1,74 @@
 ---
-# Minimal Ansible playbook for Azure DevOps dependencies
+# Enhanced Ansible playbook for Azure DevOps agent setup
 - name: Setup Azure DevOps Dependencies
   hosts: all
   become: yes
+  vars:
+    python_version: "python3.9"
+    java_version: "java-17-openjdk-devel"
+    docker_compose_version: "1.29.2"
+
   tasks:
-    # Python setup
-    - name: Install Python and dependencies
+    # Base system setup
+    - name: Install common dependencies
       yum:
         name:
-          - python39
-          - python3-pip
+          - curl
+          - wget
+          - unzip
+          - git
+          - gcc
+          - make
+          - openssl-devel
+          - bzip2-devel
+          - libffi-devel
+          - zlib-devel
         state: present
       when: ansible_os_family == "RedHat"
 
-    - name: Install Python packages
-      shell: |
-        python3.9 -m pip install --upgrade pip
-        python3.9 -m pip install flask pytest flake8 pytest-cov psycopg2-binary
+    # Python setup
+    - name: Install Python
+      yum:
+        name: "{{ python_version }}"
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install pip
+      get_url:
+        url: https://bootstrap.pypa.io/get-pip.py
+        dest: /tmp/get-pip.py
+        mode: '0755'
+
+    - name: Run pip installer
+      command: "{{ python_version }} /tmp/get-pip.py"
       args:
-        executable: /bin/bash
+        creates: /usr/bin/pip3
+
+    - name: Install Python packages
+      pip:
+        name:
+          - flask
+          - pytest
+          - flake8
+          - pytest-cov
+          - psycopg2-binary
+          - ansible
+          - docker
+          - pywinrm
+        executable: pip3
 
     # Java setup
     - name: Install Java
       yum:
-        name: java-17-openjdk-devel
+        name: "{{ java_version }}"
         state: present
       when: ansible_os_family == "RedHat"
-      ignore_errors: yes
+
+    - name: Set JAVA_HOME
+      lineinfile:
+        path: /etc/environment
+        line: 'JAVA_HOME=/usr/lib/jvm/{{ java_version | replace("-devel", "") }}'
+        state: present
 
     # Docker setup
     - name: Install Docker dependencies
@@ -39,10 +81,9 @@
       when: ansible_os_family == "RedHat"
 
     - name: Add Docker repo
-      shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-      args:
-        executable: /bin/bash
-      when: ansible_os_family == "RedHat"
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
 
     - name: Install Docker
       yum:
@@ -51,49 +92,114 @@
           - docker-ce-cli
           - containerd.io
         state: present
-      when: ansible_os_family == "RedHat"
 
-    - name: Start Docker (if service exists)
-      shell: systemctl start docker && systemctl enable docker
-      args:
-        executable: /bin/bash
-      ignore_errors: yes
+    - name: Start and enable Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_user_id }}"
+        groups: docker
+        append: yes
+
+    # Docker Compose setup
+    - name: Install Docker Compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64"
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
 
     # Helm setup
     - name: Install Helm
-      shell: |
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        chmod 700 get_helm.sh
-        ./get_helm.sh
-      args:
-        executable: /bin/bash
-        creates: /usr/local/bin/helm
+      get_url:
+        url: https://get.helm.sh/helm-v3.7.2-linux-amd64.tar.gz
+        dest: /tmp/helm.tar.gz
 
-    # AWS CLI setup
-    - name: Install AWS CLI
-      shell: |
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        yum install -y unzip
-        unzip -o awscliv2.zip
-        ./aws/install --update
-      args:
-        executable: /bin/bash
-        creates: /usr/local/bin/aws
+    - name: Extract Helm
+      unarchive:
+        src: /tmp/helm.tar.gz
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install Helm binary
+      copy:
+        src: "/tmp/linux-amd64/helm"
+        dest: "/usr/local/bin/helm"
+        mode: '0755'
+        remote_src: yes
 
     # kubectl setup
     - name: Install kubectl
-      shell: |
-        curl -LO "https://dl.k8s.io/release/stable.txt"
-        curl -LO "https://dl.k8s.io/release/$(cat stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        mv kubectl /usr/local/bin/
+      get_url:
+        url: https://storage.googleapis.com/kubernetes-release/release/v1.22.4/bin/linux/amd64/kubectl
+        dest: /usr/local/bin/kubectl
+        mode: '0755'
+
+    # AWS CLI setup
+    - name: Install AWS CLI
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+
+    - name: Unzip AWS CLI
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Run AWS CLI installer
+      command: /tmp/aws/install --update
       args:
-        executable: /bin/bash
-        creates: /usr/local/bin/kubectl
+        creates: /usr/local/bin/aws
 
     # JFrog CLI setup
     - name: Install JFrog CLI
-      shell: curl -fL https://install-cli.jfrog.io | sh
+      get_url:
+        url: https://releases.jfrog.io/artifactory/jfrog-cli/v2/install.sh
+        dest: /tmp/install-jfrog-cli.sh
+        mode: '0755'
+
+    - name: Run JFrog CLI installer
+      command: /tmp/install-jfrog-cli.sh
+      args:
+        creates: /usr/local/bin/jfrog
+
+    # Azure CLI setup (optional)
+    - name: Install Azure CLI
+      shell: |
+        rpm --import https://packages.microsoft.com/keys/microsoft.asc
+        echo -e "[azure-cli]
+        name=Azure CLI
+        baseurl=https://packages.microsoft.com/yumrepos/azure-cli
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://packages.microsoft.com/keys/microsoft.asc" | tee /etc/yum.repos.d/azure-cli.repo
+        yum install -y azure-cli
       args:
         executable: /bin/bash
-        creates: /usr/local/bin/jfrog
+        creates: /usr/bin/az
+
+    # Node.js setup (optional)
+    - name: Install Node.js
+      shell: |
+        curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+        yum install -y nodejs
+      args:
+        executable: /bin/bash
+        creates: /usr/bin/node
+
+    # Final system configuration
+    - name: Update PATH
+      lineinfile:
+        path: /etc/environment
+        regexp: '^PATH='
+        line: 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/bin"'
+        state: present
+
+    - name: Reload environment
+      shell: source /etc/environment
+      args:
+        executable: /bin/bash
