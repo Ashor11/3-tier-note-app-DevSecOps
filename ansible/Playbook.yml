@@ -88,6 +88,7 @@
         sudo systemctl enable docker
         sudo usermod -aG docker $(whoami)
         sudo ln -sf /var/run/docker.sock /var/run/docker.sock
+        sudo chmod 666 /var/run/docker.sock
       args:
         executable: /bin/bash
       ignore_errors: yes
@@ -156,42 +157,6 @@
       command: /tmp/aws/install --update
       args:
         creates: /usr/local/bin/aws
-
-    # JFrog CLI setup
-    - name: Install JFrog CLI
-      get_url:
-        url: https://releases.jfrog.io/artifactory/jfrog-cli/v2/install.sh
-        dest: /tmp/install-jfrog-cli.sh
-        mode: '0755'
-
-    - name: Run JFrog CLI installer
-      command: /tmp/install-jfrog-cli.sh
-      args:
-        creates: /usr/local/bin/jfrog
-
-    # Azure CLI setup (optional)
-    - name: Install Azure CLI
-      shell: |
-        rpm --import https://packages.microsoft.com/keys/microsoft.asc
-        echo -e "[azure-cli]
-        name=Azure CLI
-        baseurl=https://packages.microsoft.com/yumrepos/azure-cli
-        enabled=1
-        gpgcheck=1
-        gpgkey=https://packages.microsoft.com/keys/microsoft.asc" | tee /etc/yum.repos.d/azure-cli.repo
-        yum install -y azure-cli
-      args:
-        executable: /bin/bash
-        creates: /usr/bin/az
-
-    # Node.js setup (optional)
-    - name: Install Node.js
-      shell: |
-        curl -sL https://rpm.nodesource.com/setup_14.x | bash -
-        yum install -y nodejs
-      args:
-        executable: /bin/bash
-        creates: /usr/bin/node
 
     # Final system configuration
     - name: Update PATH
