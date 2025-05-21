@@ -4,37 +4,32 @@ This directory contains Ansible playbooks to set up Azure DevOps agents with all
 
 ## Files
 
-- `azure_devops_setup.yml`: Main playbook that installs all dependencies and tools
-- `inventory.ini`: Inventory file where you define your target hosts
+- `Playbook.yml`: Main playbook that installs all dependencies and tools
+- `inventory`: Simple inventory file that targets localhost
 - `ansible.cfg`: Ansible configuration file
 
 ## Prerequisites
 
 1. Ansible installed on your control machine
-2. SSH access to target hosts
-3. Sudo privileges on target hosts
+2. Sudo privileges on the agent machine
 
 ## Usage
 
-### 1. Configure your inventory
+### 1. Run the playbook in Azure DevOps pipeline
 
-Edit the `inventory.ini` file to add your target hosts:
+The playbook is configured to run on localhost in the Azure DevOps pipeline:
 
-```ini
-[azure_devops_agents]
-agent1 ansible_host=192.168.1.100 ansible_user=ec2-user
+```yaml
+- script: |
+    ansible-playbook -i ansible/inventory ansible/Playbook.yml
+  workingDirectory: '$(System.DefaultWorkingDirectory)'
+  displayName: 'Run Ansible Playbook to install dependencies'
 ```
 
-### 2. Run the playbook
+### 2. For manual execution
 
 ```bash
-ansible-playbook azure_devops_setup.yml
-```
-
-### 3. For local testing
-
-```bash
-ansible-playbook azure_devops_setup.yml -c local -i localhost, --become
+ansible-playbook -i inventory Playbook.yml
 ```
 
 ## What gets installed
@@ -43,20 +38,23 @@ The playbook installs and configures:
 
 - Python 3.9 with pip and required packages (Flask, pytest, flake8, pytest-cov)
 - Java 17 (for SonarQube)
-- Docker CE
+- Docker CE with proper permissions
 - Helm 3
 - AWS CLI v2
-- SonarQube Scanner
 - kubectl
 - JFrog CLI
+- Node.js 14
+- Azure CLI
 
-## Azure DevOps Agent Configuration
+## Docker Installation
 
-The playbook includes commented sections for Azure DevOps agent setup. To use this:
+The playbook includes a simplified Docker installation that:
 
-1. Uncomment the Azure DevOps agent setup section in `azure_devops_setup.yml`
-2. Replace `YOUR_ORGANIZATION` with your Azure DevOps organization name
-3. Replace `YOUR_PAT_TOKEN` with a Personal Access Token that has the appropriate permissions
+1. Installs Docker using dnf/yum
+2. Sets proper permissions on the Docker socket
+3. Enables and starts the Docker service
+4. Adds the current user to the Docker group
+5. Verifies the installation by running a test container
 
 ## Customization
 
@@ -64,9 +62,7 @@ You can modify the variables at the top of the playbook to change versions of in
 
 ```yaml
 vars:
-  java_version: "17"
-  python_version: "3.9"
+  python_version: "python3.9"
+  java_version: "java-17-openjdk-devel"
   docker_compose_version: "1.29.2"
-  helm_version: "3.9.0"
-  sonar_scanner_version: "4.7.0.2747"
 ```
