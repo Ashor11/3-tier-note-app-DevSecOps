@@ -62,47 +62,11 @@
     - name: Install Java
       shell: |
         sudo yum install -y java-17-openjdk-devel
-        sudo alternatives --set java /usr/lib/jvm/java-17-openjdk/bin/java
-        sudo mkdir -p /usr/java
-        sudo ln -sf /usr/lib/jvm/java-17-openjdk /usr/java/default
-      args:
-        executable: /bin/bash
-
-    - name: Set JAVA_HOME globally
-      shell: |
-        echo "export JAVA_HOME=/usr/java/default" | sudo tee /etc/profile.d/java.sh
-        echo "export PATH=\$JAVA_HOME/bin:\$PATH" | sudo tee -a /etc/profile.d/java.sh
-        sudo chmod +x /etc/profile.d/java.sh
-        source /etc/profile.d/java.sh
-      args:
-        executable: /bin/bash
-
-    - name: Create global symlinks
-      shell: |
-        sudo ln -sf /usr/java/default/bin/java /usr/bin/java
-        sudo ln -sf /usr/java/default/bin/javac /usr/bin/javac
-      args:
-        executable: /bin/bash
-
-    - name: Verify Java installation
-      shell: |
-        which java
+        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+        export PATH=$JAVA_HOME/bin:$PATH
+        echo "##vso[task.setvariable variable=JAVA_HOME]/usr/lib/jvm/java-17-openjdk"
+        echo "##vso[task.setvariable variable=PATH]$PATH:/usr/lib/jvm/java-17-openjdk/bin"
         java -version
-      args:
-        executable: /bin/bash
-      register: java_version_output
-      changed_when: false
-
-    - name: Display Java version
-      debug:
-        msg: "{{ java_version_output.stderr }}"
-
-    # Docker installation
-    - name: Remove podman-docker if installed
-      shell: sudo dnf remove -y podman-docker
-      args:
-        executable: /bin/bash
-      ignore_errors: yes
 
     - name: Install Docker
       shell: |
