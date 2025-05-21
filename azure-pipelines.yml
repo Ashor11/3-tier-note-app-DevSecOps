@@ -37,6 +37,9 @@ stages:
   dependsOn: prerequest
   jobs:
   - job: docker
+    displayName: build docker images
+    steps:
+    - checkout: self
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
