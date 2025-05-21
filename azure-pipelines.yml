@@ -51,12 +51,6 @@ stages:
     steps:
     - checkout: self
       fetchDepth: 0
-    - script: |
-        export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
-        echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
-        echo "JAVA_HOME set to $JAVA_HOME"
-        java -version
-      displayName: 'Install Java 17'
     - task: SonarCloudPrepare@3
       displayName: 'Configure SonarCloud Analysis'
       inputs:
