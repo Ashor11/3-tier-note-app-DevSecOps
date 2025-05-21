@@ -116,6 +116,7 @@ stages:
 
   - job: helm
     dependsOn: docker
+    displayName: build HELM Chart
     steps:
     - checkout: self
     - script: |
