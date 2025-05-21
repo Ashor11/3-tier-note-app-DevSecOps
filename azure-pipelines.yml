@@ -40,6 +40,10 @@ stages:
     displayName: build docker images
     steps:
     - checkout: self
+    - script: |
+        sudo loginctl enable-linger $(whoami)
+        sudo chmod 666 /var/run/docker.sock
+      displayName: 'Fix Docker permissions'
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
