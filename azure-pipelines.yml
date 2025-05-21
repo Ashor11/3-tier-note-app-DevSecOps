@@ -168,6 +168,30 @@ stages:
             exit 1
           fi
 
+  - job: sonarqube
+    dependsOn: test
+    timeoutInMinutes: 20
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - task: SonarCloudPrepare@3
+      displayName: 'Configure SonarCloud Analysis'
+      inputs:
+        SonarQube: 'sonarservice'
+        organization: 'ashouryasser11'
+        scannerMode: 'CLI'
+        configMode: 'manual'
+        cliProjectKey: 'ashouryasser11_feedback-app'
+        cliProjectName: 'feedback-app'
+        extraProperties: |
+          sonar.sources=note-chart
+
+    - task: SonarCloudAnalyze@3
+      displayName: 'Run SonarCloud Analysis'
+    - task: SonarCloudPublish@3
+      displayName: 'Publish Quality Gate Results'
+
 - stage: CD
   displayName: CD stage
   jobs:
