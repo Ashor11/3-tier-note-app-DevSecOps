@@ -42,7 +42,7 @@ stages:
         sudo pip install -r src/feedback_backend/requirements.txt
         python3 -m pytest tests/test_app.py  --cov=src/feedback_backend --cov-report=xml
       displayName: 'Run Backend Tests'
-  - job: sonarqube1
+  - job: sonarqube
     dependsOn: test
     timeoutInMinutes: 20
     steps:
