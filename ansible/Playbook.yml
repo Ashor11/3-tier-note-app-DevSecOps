@@ -1,7 +1,7 @@
 ---
 # Enhanced Ansible playbook for Azure DevOps agent setup
 - name: Setup Azure DevOps Dependencies
-  hosts: all
+  hosts: localhost
   become: yes
   vars:
     python_version: "python3.9"
