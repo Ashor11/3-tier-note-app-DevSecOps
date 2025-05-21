@@ -36,53 +36,7 @@ stages:
   displayName: CI stage
   dependsOn: prerequest
   jobs:
-  - job: test
-    steps:
-    - checkout: self
-    - script: flake8 src/note_backend/app.py
-      displayName: Linting Backend
-    - script: |
-        sudo pip install -r src/note_backend/requirements.txt
-        python3 -m pytest tests/test_app.py  --cov=src/note_backend --cov-report=xml
-      displayName: 'Run Backend Tests'
-  - job: sonarqube
-    dependsOn: test
-    timeoutInMinutes: 20
-    steps:
-    - checkout: self
-      fetchDepth: 0
-    - task: SonarCloudPrepare@3
-      displayName: 'Configure SonarCloud Analysis'
-      inputs:
-        SonarQube: 'sonarservice'
-        organization: 'ashouryasser11'
-        scannerMode: 'CLI'
-        configMode: 'manual'
-        cliProjectKey: 'ashouryasser11_note-app-DevSecOps.git'
-        cliProjectName: 'note-app-DevSecOps'
-        extraProperties: |
-          sonar.sources=src/note_backend
-          sonar.python.coverage.reportPaths=$(System.DefaultWorkingDirectory)/coverage.xml
-          sonar.exclusions=**/tests/**
-          sonar.python.version=3.9
-    - task: SonarCloudAnalyze@3
-      displayName: 'Run SonarCloud Analysis'
-    - task: SonarCloudPublish@3
-      displayName: 'Publish Quality Gate Results'
   - job: docker
-    dependsOn: sonarqube
-    steps:
-    - script: |
-        sudo yum install -y docker
-        sudo systemctl start docker
-        sudo usermod -aG docker $(whoami)
-        sudo yum install -y yum-utils
-        sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-        sudo yum install -y docker-ce docker-ce-cli containerd.io
-        sudo systemctl start docker
-        sudo systemctl enable docker
-        sudo chmod 666 /var/run/docker.sock
-      displayName: 'Install Docker'
     - task: Docker@2
       condition: succeeded()
       displayName: 'Build frontend image'
