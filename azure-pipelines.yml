@@ -182,7 +182,7 @@ stages:
               regionName: 'us-east-1'
               scriptType: 'inline'
               inlineScript: |
-                 aws eks update-kubeconfig --name my-eks-cluster --region us-east-1 
+                 aws eks update-kubeconfig --name EKS_Cluster --region us-east-1 
   
           - task: Bash@3
             displayName: 'helm install'
