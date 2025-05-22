@@ -4,15 +4,15 @@ import React from 'react';
 const Footer = () => {
   return (
     <footer style={{
-      backgroundColor: '#f5f5f5',
-      color: '#333',
+      backgroundColor: '#001f3f', // navy blue
+      color: '#fff',
       padding: '1rem',
       textAlign: 'center',
       marginTop: '2rem',
-      borderTop: '1px solid #ddd'
+      borderTop: '1px solid #004080'
     }}>
-      <p>© 2023 Ashour To Do List - Organize your tasks efficiently</p>
-      <p>Keep track of your daily tasks and boost your productivity</p>
+      <p>© 2023 Score Wears Company</p>
+      <p>Innovative tracksuits with quality and style</p>
     </footer>
   );
 };
