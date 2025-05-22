@@ -14,6 +14,8 @@ A fully containerized and Kubernetes-ready note application with complete DevSec
 
 Perfect for DevOps demos, Kubernetes practice, and hands-on CI/CD pipelines.
 
+![Uploading aaaa.png…]()
+
 ---
 
 ## 🔧 Architecture
